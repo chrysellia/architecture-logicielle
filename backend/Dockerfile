@@ -32,11 +32,7 @@ RUN docker-php-ext-install \
     mbstring
 
 # Install Composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-    php composer-setup.php && \
-    php -r "unlink('composer-setup.php');" && \
-    mv composer.phar /usr/local/bin/composer && \
-    chmod +x /usr/local/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www/html
@@ -48,6 +44,12 @@ FROM base as development
 RUN apk add --no-cache \
     supervisor \
     nginx
+
+# Copy source code
+COPY . /var/www/html
+
+# Install dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copy configuration files
 COPY docker/php/php.ini-development /usr/local/etc/php/php.ini

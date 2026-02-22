@@ -32,40 +32,24 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-      target: ${APP_ENV:-development}
+      dockerfile: Dockerfile.simple
     container_name: mini_erp_backend
-    environment:
-      APP_ENV: ${APP_ENV:-development}
-      APP_SECRET: ${APP_SECRET:-your-secret-key}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-erp_user}:${POSTGRES_PASSWORD:-erp_password}@database:5432/${POSTGRES_DB:-mini_erp}?serverVersion=15&charset=utf8
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-jwt-secret-key}
-      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-your-jwt-public-key}
-      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-your-jwt-passphrase}
-      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:-^http://localhost:5173$}
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
+    working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
-      - ./backend/var:/var/www/html/var
+      - ./backend/vendor:/var/www/html/vendor
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - APP_SECRET=${APP_SECRET}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:${POSTGRES_PORT}/${POSTGRES_DB}?serverVersion=15&charset=utf8
     depends_on:
       - database
       - redis
     networks:
       - mini_erp_network
     restart: unless-stopped
-    command: >
-      sh -c "
-        if [ '$APP_ENV' = 'development' ]; then
-          composer install --no-interaction --prefer-dist &&
-          php bin/console doctrine:migrations:migrate --no-interaction &&
-          php bin/console doctrine:fixtures:load --no-interaction &&
-          php -S 0.0.0.0:8000 -t public/
-        else
-          php-fpm
-        fi
-      "
 
   # Nginx Reverse Proxy (for production)
   nginx:
