@@ -1,65 +1,93 @@
 import { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, Package } from 'lucide-react'
+import { useProducts } from '../../hooks/useData'
+import { ProductForm } from '../../components/forms/ProductForm'
+import { createProduct, updateProduct, deleteProduct } from '../../hooks/useData'
 
 export function ProductListPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<any>(null)
+  
+  const { data: products = [], isLoading: productsLoading, error, refetch } = useProducts()
+  const createProductMutation = createProduct()
+  const updateProductMutation = updateProduct()
+  const deleteProductMutation = deleteProduct()
 
-  // Mock data
-  const products = [
-    {
-      id: 1,
-      name: 'Laptop Pro 15"',
-      sku: 'LP-15-001',
-      category: 'Informatique',
-      price: 1299.99,
-      stock: 15,
-      status: 'active'
-    },
-    {
-      id: 2,
-      name: 'Mouse Wireless',
-      sku: 'MW-001',
-      category: 'Accessoires',
-      price: 29.99,
-      stock: 3,
-      status: 'low_stock'
-    },
-    {
-      id: 3,
-      name: 'Keyboard Mechanical',
-      sku: 'KM-001',
-      category: 'Accessoires',
-      price: 89.99,
-      stock: 0,
-      status: 'out_of_stock'
-    }
-  ]
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'low_stock':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'out_of_stock':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  const handleCreateProduct = async (formData: any) => {
+    try {
+      await createProductMutation.mutateAsync(formData)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error creating product:', error)
     }
   }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Actif'
-      case 'low_stock':
-        return 'Stock faible'
-      case 'out_of_stock':
-        return 'Rupture'
-      default:
-        return status
+  const handleUpdateProduct = async (formData: any) => {
+    if (!editingProduct) return
+    try {
+      await updateProductMutation.mutateAsync({ id: editingProduct.id, data: formData })
+      setEditingProduct(null)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error updating product:', error)
     }
+  }
+
+  const handleDeleteProduct = async (productId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
+    try {
+      await deleteProductMutation.mutateAsync(productId)
+    } catch (error) {
+      console.error('Error deleting product:', error)
+    }
+  }
+
+  const openEditForm = (product: any) => {
+    setEditingProduct(product)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingProduct(null)
+  }
+
+  const filteredProducts = products.filter((product: any) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const getStatusColor = (stock: number) => {
+    if (stock === 0) return 'bg-red-100 text-red-800'
+    if (stock <= 5) return 'bg-yellow-100 text-yellow-800'
+    return 'bg-green-100 text-green-800'
+  }
+
+  const getStatusText = (stock: number) => {
+    if (stock === 0) return 'Rupture'
+    if (stock <= 5) return 'Stock faible'
+    return 'En stock'
+  }
+
+  const isLoading = productsLoading || createProductMutation.isPending || 
+                   updateProductMutation.isPending || deleteProductMutation.isPending
+
+  if (productsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        Erreur lors du chargement des produits
+      </div>
+    )
   }
 
   return (
@@ -69,7 +97,10 @@ export function ProductListPage() {
           <h1 className="text-3xl font-bold text-gray-900">Produits</h1>
           <p className="text-gray-600 mt-2">Gérez votre catalogue de produits</p>
         </div>
-        <button className="btn btn-primary flex items-center space-x-2">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="btn btn-primary flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Nouveau produit</span>
         </button>
@@ -99,18 +130,10 @@ export function ProductListPage() {
         {showFilters && (
           <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-              <select className="input">
-                <option value="">Toutes</option>
-                <option value="informatique">Informatique</option>
-                <option value="accessoires">Accessoires</option>
-              </select>
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
               <select className="input">
                 <option value="">Tous</option>
-                <option value="active">Actif</option>
+                <option value="active">En stock</option>
                 <option value="low_stock">Stock faible</option>
                 <option value="out_of_stock">Rupture</option>
               </select>
@@ -122,6 +145,15 @@ export function ProductListPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Prix max</label>
               <input type="number" placeholder="9999" className="input" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+              <select className="input">
+                <option value="">Tous</option>
+                <option value="in_stock">En stock</option>
+                <option value="low_stock">Stock faible</option>
+                <option value="out_of_stock">Rupture</option>
+              </select>
             </div>
           </div>
         )}
@@ -136,7 +168,7 @@ export function ProductListPage() {
                   Produit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Catégorie
+                  Description
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Prix
@@ -153,7 +185,7 @@ export function ProductListPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
+              {filteredProducts.map((product: any) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -164,26 +196,34 @@ export function ProductListPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.category}
+                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                    {product.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    €{product.price.toFixed(2)}
+                    €{parseFloat(product.price).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {product.stock}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(product.status)}`}>
-                      {getStatusText(product.status)}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(product.stock)}`}>
+                      {getStatusText(product.stock)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        onClick={() => openEditForm(product)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Modifier"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button 
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -194,6 +234,15 @@ export function ProductListPage() {
           </table>
         </div>
       </div>
+
+      {showForm && (
+        <ProductForm
+          product={editingProduct}
+          onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
+          onCancel={closeForm}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   )
 }

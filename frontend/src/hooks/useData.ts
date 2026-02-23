@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dataService, DashboardStats, Order, Customer, Invoice, StockMovement } from '../services/dataService'
 import { productService } from '../services/productService'
 
@@ -77,7 +77,74 @@ export const useStockMovement = (id: number) => {
 export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
-    queryFn: () => productService.getProducts(),
+    queryFn: async () => {
+      const response = await productService.getProducts()
+      return response.data || response // Handle both paginated and direct array responses
+    },
     staleTime: 5 * 60 * 1000,
+  })
+}
+
+// CRUD mutations for products
+export const createProduct = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (productData: any) => productService.createProduct(productData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}
+
+export const updateProduct = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => 
+      productService.updateProduct(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}
+
+export const deleteProduct = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => productService.deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}
+
+// CRUD mutations for customers
+export const createCustomer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (customerData: any) => dataService.createCustomer(customerData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+    },
+  })
+}
+
+export const updateCustomer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => 
+      dataService.updateCustomer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+    },
+  })
+}
+
+export const deleteCustomer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => dataService.deleteCustomer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+    },
   })
 }

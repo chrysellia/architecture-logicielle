@@ -2,71 +2,101 @@
 
 namespace App\Application\Service;
 
-use App\Domain\Entity\Product;
-use App\Domain\ValueObject\Money;
-
 class SimpleProductService
 {
+    private array $products = [];
+    private int $nextId = 4;
+
     public function __construct()
     {
-        // Service simplifié sans dépendances pour éviter les erreurs d'autowiring
-    }
-
-    public function createProduct(array $data): Product
-    {
-        $product = new Product();
-        $product->setName($data['name'] ?? 'Test Product');
-        $product->setSku($data['sku'] ?? 'TEST-001');
-        $product->setDescription($data['description'] ?? 'Test Description');
-        $product->setPrice(new Money($data['price'] ?? 99.99, 'EUR'));
-        $product->setStock($data['stock'] ?? 10);
-        $product->setActive($data['active'] ?? true);
-
-        return $product;
-    }
-
-    public function getProducts(): array
-    {
-        // Retourne des données de test pour l'instant
-        return [
+        // Initialisation avec des données de test
+        $this->products = [
             [
                 'id' => 1,
                 'name' => 'Laptop Pro 15"',
                 'sku' => 'LP-15-001',
-                'category' => 'Informatique',
+                'description' => 'Laptop professionnel 15 pouces',
                 'price' => 1299.99,
                 'stock' => 15,
-                'status' => 'active'
+                'active' => true
             ],
             [
                 'id' => 2,
                 'name' => 'Mouse Wireless',
                 'sku' => 'MW-001',
-                'category' => 'Accessoires',
+                'description' => 'Souris sans fil',
                 'price' => 29.99,
                 'stock' => 3,
-                'status' => 'low_stock'
+                'active' => true
             ],
             [
                 'id' => 3,
                 'name' => 'Keyboard Mechanical',
                 'sku' => 'KM-001',
-                'category' => 'Accessoires',
+                'description' => 'Clavier mécanique',
                 'price' => 89.99,
                 'stock' => 0,
-                'status' => 'out_of_stock'
+                'active' => true
             ]
         ];
     }
 
+    public function createProduct(array $data): array
+    {
+        $product = [
+            'id' => $this->nextId++,
+            'name' => $data['name'] ?? 'Test Product',
+            'sku' => $data['sku'] ?? 'TEST-001',
+            'description' => $data['description'] ?? 'Test Description',
+            'price' => (float)($data['price'] ?? 99.99),
+            'stock' => (int)($data['stock'] ?? 10),
+            'active' => (bool)($data['active'] ?? true)
+        ];
+
+        $this->products[] = $product;
+        return $product;
+    }
+
+    public function getProducts(): array
+    {
+        return $this->products;
+    }
+
     public function getProductById(int $id): ?array
     {
-        $products = $this->getProducts();
-        foreach ($products as $product) {
+        foreach ($this->products as $product) {
             if ($product['id'] === $id) {
                 return $product;
             }
         }
         return null;
+    }
+
+    public function updateProduct(int $id, array $data): array
+    {
+        foreach ($this->products as &$product) {
+            if ($product['id'] === $id) {
+                if (isset($data['name'])) $product['name'] = $data['name'];
+                if (isset($data['sku'])) $product['sku'] = $data['sku'];
+                if (isset($data['description'])) $product['description'] = $data['description'];
+                if (isset($data['price'])) $product['price'] = (float)$data['price'];
+                if (isset($data['stock'])) $product['stock'] = (int)$data['stock'];
+                if (isset($data['active'])) $product['active'] = (bool)$data['active'];
+                return $product;
+            }
+        }
+        return [];
+    }
+
+    public function deleteProduct(int $id): bool
+    {
+        foreach ($this->products as $key => $product) {
+            if ($product['id'] === $id) {
+                unset($this->products[$key]);
+                $this->products = array_values($this->products); // Réindexer
+                return true;
+            }
+        }
+        return false;
     }
 }
