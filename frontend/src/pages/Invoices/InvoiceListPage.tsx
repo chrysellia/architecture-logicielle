@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, FileText, Download, Eye } from 'lucide-react'
-import { useInvoices, useOrders, createInvoice, updateInvoice, deleteInvoice } from '../../hooks/useData'
+import { useInvoices, useOrders, createInvoice, updateInvoice, deleteInvoice, downloadInvoice } from '../../hooks/useData'
 import { InvoiceForm } from '../../components/forms/InvoiceForm'
 
 export function InvoiceListPage() {
@@ -14,6 +14,7 @@ export function InvoiceListPage() {
   const createInvoiceMutation = createInvoice()
   const updateInvoiceMutation = updateInvoice()
   const deleteInvoiceMutation = deleteInvoice()
+  const downloadInvoiceMutation = downloadInvoice()
 
   const handleCreateInvoice = async (formData: any) => {
     try {
@@ -44,6 +45,39 @@ export function InvoiceListPage() {
     }
   }
 
+  const handleDownloadInvoice = async (invoiceId: number) => {
+    try {
+      const result = await downloadInvoiceMutation.mutateAsync(invoiceId)
+      if (result.success) {
+        // Créer un lien de téléchargement temporaire
+        const downloadLink = document.createElement('a')
+        downloadLink.href = result.data.downloadUrl
+        downloadLink.download = `facture-${result.data.invoiceNumber}.html`
+        document.body.appendChild(downloadLink)
+        downloadLink.click()
+        document.body.removeChild(downloadLink)
+      }
+    } catch (error) {
+      console.error('Error downloading invoice:', error)
+    }
+  }
+
+  const handleViewInvoice = async (invoiceId: number) => {
+    try {
+      const result = await downloadInvoiceMutation.mutateAsync(invoiceId)
+      if (result.success) {
+        // Ouvrir la facture dans un nouvel onglet
+        const newWindow = window.open('', '_blank')
+        if (newWindow) {
+          newWindow.document.write(result.data.html)
+          newWindow.document.close()
+        }
+      }
+    } catch (error) {
+      console.error('Error viewing invoice:', error)
+    }
+  }
+
   const openEditForm = (invoice: any) => {
     setEditingInvoice(invoice)
     setShowForm(true)
@@ -56,7 +90,7 @@ export function InvoiceListPage() {
 
   const isLoadingWithMutations = isLoading || ordersLoading || 
                                   createInvoiceMutation.isPending || updateInvoiceMutation.isPending || 
-                                  deleteInvoiceMutation.isPending
+                                  deleteInvoiceMutation.isPending || downloadInvoiceMutation.isPending
 
   if (isLoadingWithMutations) {
     return (
@@ -210,10 +244,18 @@ export function InvoiceListPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        onClick={() => handleViewInvoice(invoice.id)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Voir la facture"
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="text-green-600 hover:text-green-900">
+                      <button 
+                        onClick={() => handleDownloadInvoice(invoice.id)}
+                        className="text-green-600 hover:text-green-900"
+                        title="Télécharger la facture"
+                      >
                         <Download className="h-4 w-4" />
                       </button>
                       <button 

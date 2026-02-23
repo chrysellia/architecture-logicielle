@@ -70,6 +70,16 @@ export const useInvoice = (id: number) => {
   })
 }
 
+export const downloadInvoice = () => {
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`http://localhost:8000/api/invoices/${id}/download`);
+      const data = await response.json();
+      return data;
+    },
+  })
+}
+
 export const useStockMovements = () => {
   return useQuery<StockMovement[]>({
     queryKey: ['stock-movements'],

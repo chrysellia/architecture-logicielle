@@ -304,6 +304,122 @@ class SimpleInvoiceController extends AbstractController
         ]);
     }
 
+    #[Route('/invoices/{id}/download', methods: ['GET'])]
+    public function downloadInvoiceAction(int $id): JsonResponse
+    {
+        $invoices = $this->getInvoices();
+        foreach ($invoices as $invoice) {
+            if ($invoice['id'] === $id) {
+                // Générer un contenu HTML simple pour la facture
+                $html = $this->generateInvoiceHtml($invoice);
+                
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'id' => $invoice['id'],
+                        'invoiceNumber' => $invoice['invoiceNumber'],
+                        'html' => $html,
+                        'downloadUrl' => 'data:text/html;charset=utf-8,' . urlencode($html)
+                    ],
+                    'message' => 'Invoice generated successfully'
+                ]);
+            }
+        }
+        
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Invoice not found'
+        ], 404);
+    }
+
+    private function generateInvoiceHtml(array $invoice): string
+    {
+        $items = $invoice['items'] ?? [];
+        $itemsHtml = '';
+        
+        foreach ($items as $item) {
+            $itemsHtml .= sprintf('
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">%s</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">%d</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">€%.2f</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">€%.2f</td>
+                </tr>',
+                htmlspecialchars($item['description'] ?? ''),
+                $item['quantity'] ?? 1,
+                $item['unitPrice'] ?? 0,
+                $item['totalPrice'] ?? 0
+            );
+        }
+        
+        return sprintf('
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Facture %s</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .invoice-info { margin-bottom: 30px; }
+                table { width: 100%%; border-collapse: collapse; margin-bottom: 20px; }
+                th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+                th { background-color: #f5f5f5; }
+                .total { text-align: right; font-weight: bold; }
+                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>FACTURE</h1>
+                <h2>N° %s</h2>
+            </div>
+            
+            <div class="invoice-info">
+                <p><strong>Commande:</strong> %s</p>
+                <p><strong>Date d&#39;&#233;mission:</strong> %s</p>
+                <p><strong>Date d&#39;&#233;ch&#39;&#233;ance:</strong> %s</p>
+                <p><strong>Statut:</strong> %s</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantité</th>
+                        <th>Prix unitaire</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+            
+            <div class="total">
+                <p>Montant HT: €%.2f</p>
+                <p>TVA: €%.2f</p>
+                <p><strong>Total TTC: €%.2f</strong></p>
+            </div>
+            
+            <div class="footer">
+                <p>Merci pour votre confiance</p>
+            </div>
+        </body>
+        </html>',
+            htmlspecialchars($invoice['invoiceNumber']),
+            htmlspecialchars($invoice['invoiceNumber']),
+            htmlspecialchars($invoice['order']['orderNumber'] ?? ''),
+            date('d/m/Y', strtotime($invoice['issueDate'])),
+            date('d/m/Y', strtotime($invoice['dueDate'])),
+            htmlspecialchars($invoice['status']),
+            $itemsHtml,
+            $invoice['netAmount'] ?? 0,
+            $invoice['taxAmount'] ?? 0,
+            $invoice['totalAmount'] ?? 0
+        );
+    }
+
     #[Route('/invoices/{id}', methods: ['DELETE'])]
     public function deleteInvoiceAction(int $id): JsonResponse
     {
