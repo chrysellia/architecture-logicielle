@@ -318,8 +318,8 @@ class SimpleInvoiceController extends AbstractController
                     'data' => [
                         'id' => $invoice['id'],
                         'invoiceNumber' => $invoice['invoiceNumber'],
-                        'html' => $html,
-                        'downloadUrl' => 'data:text/html;charset=utf-8,' . urlencode($html)
+                            'html' => $html,
+                            'downloadUrl' => 'data:text/html;charset=utf-8,' . rawurlencode($html)
                     ],
                     'message' => 'Invoice generated successfully'
                 ]);
