@@ -17,26 +17,6 @@ class DataController extends AbstractController
         $this->dataService = $dataService;
     }
 
-    #[Route('/orders', methods: ['GET'])]
-    public function getOrders(): JsonResponse
-    {
-        return new JsonResponse([
-            'success' => true,
-            'data' => $this->dataService->getOrders(),
-            'message' => 'Orders retrieved successfully'
-        ]);
-    }
-
-    #[Route('/customers', methods: ['GET'])]
-    public function getCustomers(): JsonResponse
-    {
-        return new JsonResponse([
-            'success' => true,
-            'data' => $this->dataService->getCustomers(),
-            'message' => 'Customers retrieved successfully'
-        ]);
-    }
-
     #[Route('/invoices', methods: ['GET'])]
     public function getInvoices(): JsonResponse
     {

@@ -13,7 +13,11 @@ export const useDashboardStats = () => {
 export const useOrders = () => {
   return useQuery<Order[]>({
     queryKey: ['orders'],
-    queryFn: dataService.getOrders,
+    queryFn: async () => {
+      const response = await fetch('http://localhost:8000/api/orders');
+      const data = await response.json();
+      return data.data;
+    },
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -29,7 +33,11 @@ export const useOrder = (id: number) => {
 export const useCustomers = () => {
   return useQuery<Customer[]>({
     queryKey: ['customers'],
-    queryFn: dataService.getCustomers,
+    queryFn: async () => {
+      const response = await fetch('http://localhost:8000/api/customers');
+      const data = await response.json();
+      return data.data;
+    },
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -61,7 +69,11 @@ export const useInvoice = (id: number) => {
 export const useStockMovements = () => {
   return useQuery<StockMovement[]>({
     queryKey: ['stock-movements'],
-    queryFn: dataService.getStockMovements,
+    queryFn: async () => {
+      const response = await fetch('http://localhost:8000/api/stock-movements');
+      const data = await response.json();
+      return data.data;
+    },
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -121,7 +133,17 @@ export const deleteProduct = () => {
 export const createCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (customerData: any) => dataService.createCustomer(customerData),
+    mutationFn: async (customerData: any) => {
+      const response = await fetch('http://localhost:8000/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData),
+      });
+      const data = await response.json();
+      return data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
     },
@@ -131,8 +153,33 @@ export const createCustomer = () => {
 export const updateCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => 
-      dataService.updateCustomer(id, data),
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`http://localhost:8000/api/customers/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+    },
+  })
+}
+
+export const deleteCustomer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`http://localhost:8000/api/customers/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      return data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
     },
@@ -143,7 +190,17 @@ export const updateCustomer = () => {
 export const createStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (movementData: any) => dataService.createStockMovement(movementData),
+    mutationFn: async (movementData: any) => {
+      const response = await fetch('http://localhost:8000/api/stock-movements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(movementData),
+      });
+      const data = await response.json();
+      return data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
       queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
@@ -154,8 +211,17 @@ export const createStockMovement = () => {
 export const updateStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => 
-      dataService.updateStockMovement(id, data),
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`http://localhost:8000/api/stock-movements/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
       queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
@@ -166,10 +232,73 @@ export const updateStockMovement = () => {
 export const deleteStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => dataService.deleteStockMovement(id),
+    mutationFn: async (id: number) => {
+      const response = await fetch(`http://localhost:8000/api/stock-movements/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      return data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
       queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
+    },
+  })
+}
+
+// CRUD mutations for orders
+export const createOrder = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (orderData: any) => {
+      const response = await fetch('http://localhost:8000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+  })
+}
+
+export const updateOrder = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`http://localhost:8000/api/orders/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+  })
+}
+
+export const deleteOrder = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`http://localhost:8000/api/orders/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
     },
   })
 }

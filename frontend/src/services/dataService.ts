@@ -163,6 +163,21 @@ export const dataService = {
     return response.data
   },
 
+  async createOrder(orderData: any): Promise<any> {
+    const response = await api.post('/api/orders', orderData)
+    return response.data
+  },
+
+  async updateOrder(id: number, orderData: any): Promise<any> {
+    const response = await api.put(`/api/orders/${id}`, orderData)
+    return response.data
+  },
+
+  async deleteOrder(id: number): Promise<any> {
+    const response = await api.delete(`/api/orders/${id}`)
+    return response.data
+  },
+
   // Invoices
   async getInvoices(): Promise<Invoice[]> {
     const response = await api.get('/api/invoices')

@@ -1,10 +1,63 @@
 import { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, ShoppingCart, Eye } from 'lucide-react'
-import { useOrders } from '../../hooks/useData'
+import { useOrders, useCustomers, useProducts, createOrder, updateOrder, deleteOrder } from '../../hooks/useData'
+import { OrderForm } from '../../components/forms/OrderForm'
 
 export function OrderListPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const { data: orders, isLoading, error } = useOrders()
+  const [showForm, setShowForm] = useState(false)
+  const [editingOrder, setEditingOrder] = useState<any>(null)
+  
+  const { data: orders, isLoading: ordersLoading, error: ordersError, refetch } = useOrders()
+  const { data: customers, isLoading: customersLoading } = useCustomers()
+  const { data: products, isLoading: productsLoading } = useProducts()
+  
+  const createOrderMutation = createOrder()
+  const updateOrderMutation = updateOrder()
+  const deleteOrderMutation = deleteOrder()
+
+  const handleCreateOrder = async (formData: any) => {
+    try {
+      await createOrderMutation.mutateAsync(formData)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error creating order:', error)
+    }
+  }
+
+  const handleUpdateOrder = async (formData: any) => {
+    if (!editingOrder) return
+    try {
+      await updateOrderMutation.mutateAsync({ id: editingOrder.id, data: formData })
+      setEditingOrder(null)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error updating order:', error)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) return
+    try {
+      await deleteOrderMutation.mutateAsync(orderId)
+    } catch (error) {
+      console.error('Error deleting order:', error)
+    }
+  }
+
+  const openEditForm = (order: any) => {
+    setEditingOrder(order)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingOrder(null)
+  }
+
+  const isLoading = ordersLoading || customersLoading || productsLoading || 
+                   createOrderMutation.isPending || updateOrderMutation.isPending || 
+                   deleteOrderMutation.isPending
 
   if (isLoading) {
     return (
@@ -14,7 +67,7 @@ export function OrderListPage() {
     )
   }
 
-  if (error) {
+  if (ordersError) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
         Erreur lors du chargement des commandes
@@ -24,6 +77,8 @@ export function OrderListPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
       case 'confirmed':
         return 'bg-green-100 text-green-800'
       case 'processing':
@@ -41,6 +96,8 @@ export function OrderListPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case 'pending':
+        return 'En attente'
       case 'confirmed':
         return 'Confirmée'
       case 'processing':
@@ -70,7 +127,10 @@ export function OrderListPage() {
           <h1 className="text-3xl font-bold text-gray-900">Commandes</h1>
           <p className="text-gray-600 mt-2">Gérez vos commandes clients</p>
         </div>
-        <button className="btn btn-primary flex items-center space-x-2">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="btn btn-primary flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Nouvelle commande</span>
         </button>
@@ -156,10 +216,18 @@ export function OrderListPage() {
                       <button className="text-blue-600 hover:text-blue-900">
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <button 
+                        onClick={() => openEditForm(order)}
+                        className="text-gray-600 hover:text-gray-900"
+                        title="Modifier"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button 
+                        onClick={() => handleDeleteOrder(order.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -170,6 +238,17 @@ export function OrderListPage() {
           </table>
         </div>
       </div>
+
+      {showForm && (
+        <OrderForm
+          order={editingOrder}
+          customers={customers || []}
+          products={products || []}
+          onSubmit={editingOrder ? handleUpdateOrder : handleCreateOrder}
+          onCancel={closeForm}
+          isLoading={createOrderMutation.isPending || updateOrderMutation.isPending}
+        />
+      )}
     </div>
   )
 }
