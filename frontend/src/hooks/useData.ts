@@ -139,12 +139,37 @@ export const updateCustomer = () => {
   })
 }
 
-export const deleteCustomer = () => {
+// CRUD mutations for stock movements
+export const createStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => dataService.deleteCustomer(id),
+    mutationFn: (movementData: any) => dataService.createStockMovement(movementData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
+    },
+  })
+}
+
+export const updateStockMovement = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => 
+      dataService.updateStockMovement(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
+    },
+  })
+}
+
+export const deleteStockMovement = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => dataService.deleteStockMovement(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
     },
   })
 }

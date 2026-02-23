@@ -1,13 +1,64 @@
 import { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, Package, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
-import { useStockMovements, useProducts } from '../../hooks/useData'
+import { useStockMovements, useProducts, createStockMovement, updateStockMovement, deleteStockMovement } from '../../hooks/useData'
+import { StockMovementForm } from '../../components/forms/StockMovementForm'
 
 export function StockListPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const { data: movements, isLoading: movementsLoading, error: movementsError } = useStockMovements()
+  const [showForm, setShowForm] = useState(false)
+  const [editingMovement, setEditingMovement] = useState<any>(null)
+  
+  const { data: movements, isLoading: movementsLoading, error: movementsError, refetch } = useStockMovements()
   const { data: products, isLoading: productsLoading } = useProducts()
+  
+  const createMovementMutation = createStockMovement()
+  const updateMovementMutation = updateStockMovement()
+  const deleteMovementMutation = deleteStockMovement()
 
-  if (movementsLoading || productsLoading) {
+  const handleCreateMovement = async (formData: any) => {
+    try {
+      await createMovementMutation.mutateAsync(formData)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error creating movement:', error)
+    }
+  }
+
+  const handleUpdateMovement = async (formData: any) => {
+    if (!editingMovement) return
+    try {
+      await updateMovementMutation.mutateAsync({ id: editingMovement.id, data: formData })
+      setEditingMovement(null)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error updating movement:', error)
+    }
+  }
+
+  const handleDeleteMovement = async (movementId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce mouvement de stock ?')) return
+    try {
+      await deleteMovementMutation.mutateAsync(movementId)
+    } catch (error) {
+      console.error('Error deleting movement:', error)
+    }
+  }
+
+  const openEditForm = (movement: any) => {
+    setEditingMovement(movement)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingMovement(null)
+  }
+
+  const isLoading = movementsLoading || productsLoading || 
+                   createMovementMutation.isPending || updateMovementMutation.isPending || 
+                   deleteMovementMutation.isPending
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -63,6 +114,8 @@ export function StockListPage() {
         return 'Perte'
       case 'inventory':
         return 'Inventaire'
+      case 'manual':
+        return 'Manuel'
       default:
         return reason
     }
@@ -105,7 +158,10 @@ export function StockListPage() {
           <h1 className="text-3xl font-bold text-gray-900">Stock</h1>
           <p className="text-gray-600 mt-2">Suivez vos mouvements de stock et niveaux actuels</p>
         </div>
-        <button className="btn btn-primary flex items-center space-x-2">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="btn btn-primary flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Nouveau mouvement</span>
         </button>
@@ -251,10 +307,18 @@ export function StockListPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        onClick={() => openEditForm(movement)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Modifier"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button 
+                        onClick={() => handleDeleteMovement(movement.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -265,6 +329,16 @@ export function StockListPage() {
           </table>
         </div>
       </div>
+
+      {showForm && (
+        <StockMovementForm
+          movement={editingMovement}
+          products={products || []}
+          onSubmit={editingMovement ? handleUpdateMovement : handleCreateMovement}
+          onCancel={closeForm}
+          isLoading={createMovementMutation.isPending || updateMovementMutation.isPending}
+        />
+      )}
     </div>
   )
 }

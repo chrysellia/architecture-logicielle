@@ -148,6 +148,21 @@ export const dataService = {
     return response.data
   },
 
+  async createStockMovement(movementData: any): Promise<any> {
+    const response = await api.post('/api/stock-movements', movementData)
+    return response.data
+  },
+
+  async updateStockMovement(id: number, movementData: any): Promise<any> {
+    const response = await api.put(`/api/stock-movements/${id}`, movementData)
+    return response.data
+  },
+
+  async deleteStockMovement(id: number): Promise<any> {
+    const response = await api.delete(`/api/stock-movements/${id}`)
+    return response.data
+  },
+
   // Invoices
   async getInvoices(): Promise<Invoice[]> {
     const response = await api.get('/api/invoices')

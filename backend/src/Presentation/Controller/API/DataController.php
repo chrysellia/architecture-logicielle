@@ -47,16 +47,6 @@ class DataController extends AbstractController
         ]);
     }
 
-    #[Route('/stock-movements', methods: ['GET'])]
-    public function getStockMovements(): JsonResponse
-    {
-        return new JsonResponse([
-            'success' => true,
-            'data' => $this->dataService->getStockMovements(),
-            'message' => 'Stock movements retrieved successfully'
-        ]);
-    }
-
     #[Route('/dashboard/stats', methods: ['GET'])]
     public function getDashboardStats(): JsonResponse
     {
