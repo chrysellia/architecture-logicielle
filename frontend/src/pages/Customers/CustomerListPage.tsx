@@ -1,12 +1,62 @@
 import { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, Users, Mail, Phone, MapPin } from 'lucide-react'
-import { useCustomers } from '../../hooks/useData'
+import { useCustomers, createCustomer, updateCustomer, deleteCustomer } from '../../hooks/useData'
+import { CustomerForm } from '../../components/forms/CustomerForm'
 
 export function CustomerListPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const { data: customers, isLoading, error } = useCustomers()
+  const [showForm, setShowForm] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState<any>(null)
+  
+  const { data: customers, isLoading, error, refetch } = useCustomers()
+  
+  const createCustomerMutation = createCustomer()
+  const updateCustomerMutation = updateCustomer()
+  const deleteCustomerMutation = deleteCustomer()
 
-  if (isLoading) {
+  const handleCreateCustomer = async (formData: any) => {
+    try {
+      await createCustomerMutation.mutateAsync(formData)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error creating customer:', error)
+    }
+  }
+
+  const handleUpdateCustomer = async (formData: any) => {
+    if (!editingCustomer) return
+    try {
+      await updateCustomerMutation.mutateAsync({ id: editingCustomer.id, data: formData })
+      setEditingCustomer(null)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error updating customer:', error)
+    }
+  }
+
+  const handleDeleteCustomer = async (customerId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) return
+    try {
+      await deleteCustomerMutation.mutateAsync(customerId)
+    } catch (error) {
+      console.error('Error deleting customer:', error)
+    }
+  }
+
+  const openEditForm = (customer: any) => {
+    setEditingCustomer(customer)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingCustomer(null)
+  }
+
+  const isLoadingWithMutations = isLoading || createCustomerMutation.isPending || 
+                                  updateCustomerMutation.isPending || deleteCustomerMutation.isPending
+
+  if (isLoadingWithMutations) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -37,7 +87,10 @@ export function CustomerListPage() {
           <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
           <p className="text-gray-600 mt-2">Gérez votre base de données clients</p>
         </div>
-        <button className="btn btn-primary flex items-center space-x-2">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="btn btn-primary flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Nouveau client</span>
         </button>
@@ -135,10 +188,18 @@ export function CustomerListPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        onClick={() => openEditForm(customer)}
+                        className="text-gray-600 hover:text-gray-900"
+                        title="Modifier"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button 
+                        onClick={() => handleDeleteCustomer(customer.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -149,6 +210,15 @@ export function CustomerListPage() {
           </table>
         </div>
       </div>
+
+      {showForm && (
+        <CustomerForm
+          customer={editingCustomer}
+          onSubmit={editingCustomer ? handleUpdateCustomer : handleCreateCustomer}
+          onCancel={closeForm}
+          isLoading={createCustomerMutation.isPending || updateCustomerMutation.isPending}
+        />
+      )}
     </div>
   )
 }
