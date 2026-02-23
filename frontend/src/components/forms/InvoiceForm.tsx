@@ -300,7 +300,7 @@ export function InvoiceForm({ invoice, orders, onSubmit, onCancel, isLoading = f
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">TVA:</span>
                     <span className="text-lg font-medium text-gray-900">
-                      €{formData.taxAmount.toFixed(2)}
+                      €{typeof formData.taxAmount === 'number' ? formData.taxAmount.toFixed(2) : parseFloat(formData.taxAmount).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t">

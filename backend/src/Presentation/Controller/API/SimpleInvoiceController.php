@@ -246,26 +246,62 @@ class SimpleInvoiceController extends AbstractController
         }
 
         $invoices = $this->getInvoices();
+        $found = false;
         foreach ($invoices as &$invoice) {
-            if ($invoice['id'] === $id) {
+            if ((int)$invoice['id'] === (int)$id) {
+                $found = true;
+                
+                // Log pour déboguer
+                error_log("Found invoice with ID: " . $id . " Current taxAmount: " . $invoice['taxAmount']);
+                error_log("New taxAmount from request: " . ($data['taxAmount'] ?? 'not set'));
+                
+                // Mettre à jour tous les champs possibles
                 if (isset($data['status'])) $invoice['status'] = $data['status'];
                 if (isset($data['notes'])) $invoice['notes'] = $data['notes'];
                 if (isset($data['paidDate'])) $invoice['paidDate'] = $data['paidDate'];
+                if (isset($data['issueDate'])) $invoice['issueDate'] = $data['issueDate'];
+                if (isset($data['dueDate'])) $invoice['dueDate'] = $data['dueDate'];
+                if (isset($data['taxAmount'])) {
+                    $invoice['taxAmount'] = (float)$data['taxAmount'];
+                    error_log("Updated taxAmount to: " . $invoice['taxAmount']);
+                }
                 
-                $this->saveInvoices($invoices);
+                // Si les items sont fournis, recalculer les montants
+                if (isset($data['items']) && !empty($data['items'])) {
+                    $invoice['items'] = $data['items'];
+                    $netAmount = 0;
+                    foreach ($data['items'] as $item) {
+                        $netAmount += ($item['quantity'] ?? 1) * ($item['unitPrice'] ?? 0);
+                    }
+                    $invoice['netAmount'] = $netAmount;
+                    $taxAmount = isset($data['taxAmount']) ? (float)$data['taxAmount'] : (float)$invoice['taxAmount'];
+                    $invoice['taxAmount'] = $taxAmount;
+                    $invoice['totalAmount'] = $netAmount + $taxAmount;
+                } else if (isset($data['taxAmount'])) {
+                    // Si seulement le taxAmount est mis à jour, recalculer le total
+                    $taxAmount = (float)$data['taxAmount'];
+                    $invoice['taxAmount'] = $taxAmount;
+                    $invoice['totalAmount'] = $invoice['netAmount'] + $taxAmount;
+                }
                 
-                return new JsonResponse([
-                    'success' => true,
-                    'data' => $invoice,
-                    'message' => 'Invoice updated successfully'
-                ]);
+                break;
             }
         }
         
+        if (!$found) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invoice not found'
+            ], 404);
+        }
+        
+        $this->saveInvoices($invoices);
+        
         return new JsonResponse([
-            'success' => false,
-            'message' => 'Invoice not found'
-        ], 404);
+            'success' => true,
+            'data' => $invoice,
+            'message' => 'Invoice updated successfully'
+        ]);
     }
 
     #[Route('/invoices/{id}', methods: ['DELETE'])]

@@ -180,7 +180,7 @@ export function InvoiceListPage() {
                       <FileText className="h-8 w-8 text-gray-400 mr-3" />
                       <div>
                         <div className="text-sm font-medium text-gray-900">{invoice.invoiceNumber}</div>
-                        <div className="text-sm text-gray-500">TVA: €{invoice.taxAmount.toFixed(2)}</div>
+                        <div className="text-sm text-gray-500">TVA: €{typeof invoice.taxAmount === 'number' ? invoice.taxAmount.toFixed(2) : parseFloat(invoice.taxAmount).toFixed(2)}</div>
                       </div>
                     </div>
                   </td>
@@ -196,10 +196,10 @@ export function InvoiceListPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        €{invoice.totalAmount.toFixed(2)}
+                        €{typeof invoice.totalAmount === 'number' ? invoice.totalAmount.toFixed(2) : parseFloat(invoice.totalAmount).toFixed(2)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        Net: €{invoice.netAmount.toFixed(2)}
+                        Net: €{typeof invoice.netAmount === 'number' ? invoice.netAmount.toFixed(2) : parseFloat(invoice.netAmount).toFixed(2)}
                       </div>
                     </div>
                   </td>
