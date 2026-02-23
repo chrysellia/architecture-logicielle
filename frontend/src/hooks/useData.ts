@@ -53,7 +53,11 @@ export const useCustomer = (id: number) => {
 export const useInvoices = () => {
   return useQuery<Invoice[]>({
     queryKey: ['invoices'],
-    queryFn: dataService.getInvoices,
+    queryFn: async () => {
+      const response = await fetch('http://localhost:8000/api/invoices');
+      const data = await response.json();
+      return data.data;
+    },
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -299,6 +303,63 @@ export const deleteOrder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+  })
+}
+
+// CRUD mutations for invoices
+export const createInvoice = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (invoiceData: any) => {
+      const response = await fetch('http://localhost:8000/api/invoices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(invoiceData),
+      });
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+    },
+  })
+}
+
+export const updateInvoice = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`http://localhost:8000/api/invoices/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+    },
+  })
+}
+
+export const deleteInvoice = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`http://localhost:8000/api/invoices/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
     },
   })
 }

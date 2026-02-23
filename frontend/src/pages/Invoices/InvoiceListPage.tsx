@@ -1,12 +1,64 @@
 import { useState } from 'react'
 import { Plus, Search, Filter, Edit, Trash2, FileText, Download, Eye } from 'lucide-react'
-import { useInvoices } from '../../hooks/useData'
+import { useInvoices, useOrders, createInvoice, updateInvoice, deleteInvoice } from '../../hooks/useData'
+import { InvoiceForm } from '../../components/forms/InvoiceForm'
 
 export function InvoiceListPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const { data: invoices, isLoading, error } = useInvoices()
+  const [showForm, setShowForm] = useState(false)
+  const [editingInvoice, setEditingInvoice] = useState<any>(null)
+  
+  const { data: invoices, isLoading, error, refetch } = useInvoices()
+  const { data: orders, isLoading: ordersLoading } = useOrders()
+  
+  const createInvoiceMutation = createInvoice()
+  const updateInvoiceMutation = updateInvoice()
+  const deleteInvoiceMutation = deleteInvoice()
 
-  if (isLoading) {
+  const handleCreateInvoice = async (formData: any) => {
+    try {
+      await createInvoiceMutation.mutateAsync(formData)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error creating invoice:', error)
+    }
+  }
+
+  const handleUpdateInvoice = async (formData: any) => {
+    if (!editingInvoice) return
+    try {
+      await updateInvoiceMutation.mutateAsync({ id: editingInvoice.id, data: formData })
+      setEditingInvoice(null)
+      setShowForm(false)
+    } catch (error) {
+      console.error('Error updating invoice:', error)
+    }
+  }
+
+  const handleDeleteInvoice = async (invoiceId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) return
+    try {
+      await deleteInvoiceMutation.mutateAsync(invoiceId)
+    } catch (error) {
+      console.error('Error deleting invoice:', error)
+    }
+  }
+
+  const openEditForm = (invoice: any) => {
+    setEditingInvoice(invoice)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingInvoice(null)
+  }
+
+  const isLoadingWithMutations = isLoading || ordersLoading || 
+                                  createInvoiceMutation.isPending || updateInvoiceMutation.isPending || 
+                                  deleteInvoiceMutation.isPending
+
+  if (isLoadingWithMutations) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -64,7 +116,10 @@ export function InvoiceListPage() {
           <h1 className="text-3xl font-bold text-gray-900">Factures</h1>
           <p className="text-gray-600 mt-2">Gérez vos factures et paiements</p>
         </div>
-        <button className="btn btn-primary flex items-center space-x-2">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="btn btn-primary flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Nouvelle facture</span>
         </button>
@@ -161,10 +216,18 @@ export function InvoiceListPage() {
                       <button className="text-green-600 hover:text-green-900">
                         <Download className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <button 
+                        onClick={() => openEditForm(invoice)}
+                        className="text-gray-600 hover:text-gray-900"
+                        title="Modifier"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button 
+                        onClick={() => handleDeleteInvoice(invoice.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -175,6 +238,16 @@ export function InvoiceListPage() {
           </table>
         </div>
       </div>
+
+      {showForm && (
+        <InvoiceForm
+          invoice={editingInvoice}
+          orders={orders || []}
+          onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
+          onCancel={closeForm}
+          isLoading={createInvoiceMutation.isPending || updateInvoiceMutation.isPending}
+        />
+      )}
     </div>
   )
 }
