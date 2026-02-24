@@ -1,12 +1,13 @@
 import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle } from 'lucide-react'
-import { useDashboardStats, useOrders, useCustomers } from '../../hooks/useData'
+import { useDashboardStats, useOrders, useCustomers, useProducts } from '../../hooks/useData'
 
 export function DashboardPage() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats()
   const { data: orders, isLoading: ordersLoading } = useOrders()
   const { data: customers, isLoading: customersLoading } = useCustomers()
+  const { data: products, isLoading: productsLoading } = useProducts()
 
-  if (statsLoading || ordersLoading || customersLoading) {
+  if (statsLoading || ordersLoading || customersLoading || productsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -22,12 +23,18 @@ export function DashboardPage() {
     )
   }
 
-  const lowStockProducts = [
-    { name: 'Mouse Wireless', stock: 3 },
-    { name: 'Keyboard Mechanical', stock: 0 }
-  ]
+  // Produits avec stock faible (<= 5 unités)
+  const lowStockProducts = products?.filter(product => 
+    product.stockQuantity !== undefined && product.stockQuantity <= 5 && product.isActive
+  ).map(product => ({
+    name: product.name,
+    stock: product.stockQuantity
+  })) || []
 
-  const recentOrders = orders?.slice(0, 2) || []
+  // Commandes récentes (triées par date, plus récentes en premier)
+  const recentOrders = orders?.sort((a, b) => 
+    new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+  ).slice(0, 3) || []
 
   return (
     <div className="space-y-6">

@@ -105,8 +105,9 @@ export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const response = await productService.getProducts()
-      return response.data || response // Handle both paginated and direct array responses
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/products');
+      const data = await response.json();
+      return data.data || data; // Handle both paginated and direct array responses
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -119,6 +120,7 @@ export const createProduct = () => {
     mutationFn: (productData: any) => productService.createProduct(productData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -130,6 +132,7 @@ export const updateProduct = () => {
       productService.updateProduct(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -140,6 +143,7 @@ export const deleteProduct = () => {
     mutationFn: (id: number) => productService.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -158,6 +162,7 @@ export const createCustomer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -175,6 +180,7 @@ export const updateCustomer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -191,6 +197,7 @@ export const deleteCustomer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -209,7 +216,8 @@ export const createStockMovement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -227,7 +235,8 @@ export const updateStockMovement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -244,7 +253,8 @@ export const deleteStockMovement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      queryClient.invalidateQueries({ queryKey: ['products'] }) // Update product stock
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -263,6 +273,7 @@ export const createOrder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -280,6 +291,7 @@ export const updateOrder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -296,6 +308,7 @@ export const deleteOrder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -314,6 +327,7 @@ export const createInvoice = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -331,6 +345,7 @@ export const updateInvoice = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
@@ -347,6 +362,7 @@ export const deleteInvoice = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
   })
 }
