@@ -21,13 +21,13 @@ Ce projet utilise **Clean Architecture** avec une séparation frontend/backend :
 - **Conteneurisation** : Docker & Docker Compose
 
 Principes appliqués :
-- ✅ Modulaire
-- ✅ Évolutive  
-- ✅ Sécurisée
-- ✅ Maintenable
-- ✅ Déployable en production
-- ✅ Principes SOLID
-- ✅ Clean Architecture
+- Modulaire
+- Évolutive  
+- Sécurisée
+- Maintenable
+- Déployable en production
+- Principes SOLID
+- Clean Architecture
 
 ## Structure du projet
 
@@ -81,10 +81,10 @@ mini-erp/
 
 ## Bonus implémentés
 
-- 🔄 Architecture Hexagonale
-- ⚡ Event Driven Architecture
-- 📊 CQRS (Command Query Responsibility Segregation)
-- 📝 Event Sourcing
+-  Architecture Hexagonale
+-  Event Driven Architecture
+-  CQRS (Command Query Responsibility Segregation)
+-  Event Sourcing
 
 ## Démarrage rapide
 

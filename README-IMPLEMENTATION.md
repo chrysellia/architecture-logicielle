@@ -1,36 +1,36 @@
 # Mini ERP - Implémentation Complète
 
-## 🎯 **Objectif Accompli**
+##  **Objectif Accompli**
 
 Création d'un système Mini ERP fonctionnel avec architecture Clean Architecture, connecté à une base de données PostgreSQL, avec frontend React et backend Symfony.
 
-## 🏗️ **Architecture Implémentée**
+##  **Architecture Implémentée**
 
 ### **Backend (Symfony 6.4 + PHP 8.2)**
-- ✅ **Clean Architecture** avec séparation des couches
-- ✅ **Domain Layer** : Entités (Product, Customer, Order, Invoice, Payment, StockMovement)
-- ✅ **Application Layer** : Services et DTOs
-- ✅ **Presentation Layer** : Contrôleurs API
-- ✅ **API REST** avec endpoints pour toutes les entités
-- ✅ **Base de données** PostgreSQL configurée et connectée
+-  **Clean Architecture** avec séparation des couches
+-  **Domain Layer** : Entités (Product, Customer, Order, Invoice, Payment, StockMovement)
+-  **Application Layer** : Services et DTOs
+-  **Presentation Layer** : Contrôleurs API
+-  **API REST** avec endpoints pour toutes les entités
+-  **Base de données** PostgreSQL configurée et connectée
 
 ### **Frontend (React 18 + TypeScript)**
-- ✅ **Architecture modulaire** avec séparation des responsabilités
-- ✅ **Routing** avec React Router
-- ✅ **State Management** avec TanStack Query
-- ✅ **UI Components** avec Tailwind CSS
-- ✅ **Pages** pour tous les modules (Dashboard, Products, Orders, Customers, Invoices, Stock)
-- ✅ **Services API** pour communiquer avec le backend
+- **Architecture modulaire** avec séparation des responsabilités
+- **Routing** avec React Router
+- **State Management** avec TanStack Query
+- **UI Components** avec Tailwind CSS
+- **Pages** pour tous les modules (Dashboard, Products, Orders, Customers, Invoices, Stock)
+- **Services API** pour communiquer avec le backend
 
 ### **Infrastructure**
-- ✅ **Docker & Docker Compose** pour la conteneurisation
-- ✅ **PostgreSQL** comme base de données principale
-- ✅ **Redis** pour le cache
-- ✅ **Nginx** comme reverse proxy (production)
-- ✅ **Adminer** pour l'administration BDD
-- ✅ **MailHog** pour les emails de test
+- **Docker & Docker Compose** pour la conteneurisation
+- **PostgreSQL** comme base de données principale
+- **Redis** pour le cache
+- **Nginx** comme reverse proxy (production)
+- **Adminer** pour l'administration BDD
+- **MailHog** pour les emails de test
 
-## 📊 **Données de Test**
+##  **Données de Test**
 
 ### **Produits**
 - Laptop Pro 15" (€1299.99) - Stock: 15
@@ -57,7 +57,7 @@ Création d'un système Mini ERP fonctionnel avec architecture Clean Architectur
 - Sorties : Ventes aux clients
 - Ajustements : Produits endommagés
 
-## 🌐 **URLs d'Accès**
+##  **URLs d'Accès**
 
 ### **Application**
 - **Frontend** : http://localhost:5173
@@ -77,7 +77,7 @@ Création d'un système Mini ERP fonctionnel avec architecture Clean Architectur
 - **Adminer (BDD)** : http://localhost:8080
 - **MailHog (Emails)** : http://localhost:8025
 
-## 🚀 **Lancement**
+##  **Lancement**
 
 ```bash
 # Démarrer tous les services
@@ -91,7 +91,7 @@ docker-compose logs frontend
 docker-compose logs backend
 ```
 
-## 📁 **Structure du Projet**
+## **Structure du Projet**
 
 ```
 architecture-logicielle/
@@ -115,44 +115,44 @@ architecture-logicielle/
 └── .env.example              # Variables d'environnement
 ```
 
-## 🎨 **Fonctionnalités Implémentées**
+##  **Fonctionnalités Implémentées**
 
 ### **Tableau de Bord**
-- ✅ Statistiques en temps réel
-- ✅ Produits avec statuts de stock
-- ✅ Commandes récentes
-- ✅ Revenus totaux
+- Statistiques en temps réel
+- Produits avec statuts de stock
+- Commandes récentes
+- Revenus totaux
 
 ### **Gestion des Produits**
-- ✅ Liste avec recherche et filtres
-- ✅ Statuts (Actif, Stock faible, Rupture)
-- ✅ Informations détaillées
+- Liste avec recherche et filtres
+- Statuts (Actif, Stock faible, Rupture)
+- Informations détaillées
 
 ### **Gestion des Commandes**
-- ✅ Liste complète des commandes
-- ✅ Informations client
-- ✅ Statuts de suivi
-- ✅ Montants totaux
+- Liste complète des commandes
+- Informations client
+- Statuts de suivi
+- Montants totaux
 
 ### **Gestion des Clients**
-- ✅ Base de données clients
-- ✅ Informations de contact
-- ✅ Adresses complètes
-- ✅ Historique
+- Base de données clients
+- Informations de contact
+- Adresses complètes
+- Historique
 
 ### **Gestion des Factures**
 - Liste des factures
-- ✅ Statuts de paiement
-- ✅ Montants avec TVA
-- ✅ Dates d'échéance
+- Statuts de paiement
+- Montants avec TVA
+- Dates d'échéance
 
 ### **Gestion des Stocks**
-- ✅ État actuel du stock
-- ✅ Mouvements détaillés
-- ✅ Alertes de stock faible
-- ✅ Historique complet
+- État actuel du stock
+- Mouvements détaillés
+- Alertes de stock faible
+- Historique complet
 
-## 🔧 **Technologies Utilisées**
+##  **Technologies Utilisées**
 
 ### **Backend**
 - **Symfony 6.4** - Framework PHP
@@ -176,7 +176,7 @@ architecture-logicielle/
 - **Adminer** - Administration BDD
 - **MailHog** - Email testing
 
-## 🎯 **Prochaines Étapes**
+##  **Prochaines Étapes**
 
 1. **Formulaire de création** pour chaque entité
 2. **Édition et suppression** des enregistrements
@@ -186,16 +186,16 @@ architecture-logicielle/
 6. **Tests unitaires** et e2e
 7. **Déploiement** en production
 
-## ✅ **Validation**
+##  **Validation**
 
 L'application est **100% fonctionnelle** avec :
-- ✅ Architecture Clean Architecture respectée
-- ✅ Base de données PostgreSQL connectée
-- ✅ API REST complète
-- ✅ Frontend React moderne
-- ✅ Dockerisation complète
-- ✅ Données de test réalistes
-- ✅ Navigation fluide
-- ✅ Design responsive
+- Architecture Clean Architecture respectée
+- Base de données PostgreSQL connectée
+- API REST complète
+- Frontend React moderne
+- Dockerisation complète
+- Données de test réalistes
+- Navigation fluide
+- Design responsive
 
-**Le Mini ERP est prêt à être utilisé et développé davantage !** 🚀
+**Le Mini ERP est prêt à être utilisé et développé davantage !** 

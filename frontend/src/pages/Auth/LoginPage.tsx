@@ -1,21 +1,33 @@
 import { useState } from 'react'
 import { LogIn } from 'lucide-react'
+import { authService, LoginCredentials } from '../../services/authService'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
     
-    // Mock login
-    setTimeout(() => {
+    try {
+      const credentials: LoginCredentials = { email, password }
+      const response = await authService.login(credentials)
+      
+      if (response.success) {
+        // Redirect to dashboard
+        window.location.href = '/'
+      } else {
+        setError(response.message || 'Erreur de connexion')
+      }
+    } catch (error) {
+      setError('Erreur de connexion au serveur')
+    } finally {
       setIsLoading(false)
-      // Redirect to dashboard
-      window.location.href = '/'
-    }, 1000)
+    }
   }
 
   return (
@@ -34,6 +46,12 @@ export function LoginPage() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

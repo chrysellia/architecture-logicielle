@@ -7,12 +7,17 @@ import { CustomerListPage } from './pages/Customers/CustomerListPage'
 import { InvoiceListPage } from './pages/Invoices/InvoiceListPage'
 import { StockListPage } from './pages/Stock/StockListPage'
 import { LoginPage } from './pages/Auth/LoginPage'
+import { AuthGuard } from './components/Auth/AuthGuard'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={
+        <AuthGuard>
+          <Layout />
+        </AuthGuard>
+      }>
         <Route index element={<DashboardPage />} />
         <Route path="products" element={<ProductListPage />} />
         <Route path="products/:id" element={<div>Product Detail</div>} />
