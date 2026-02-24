@@ -133,4 +133,116 @@ class AuthService
 
         return null;
     }
+
+    public function requestPasswordReset(string $email): ?string
+    {
+        $users = $this->getUsers();
+
+        // Trouver l'utilisateur par email
+        $user = null;
+        foreach ($users as $u) {
+            if ($u['email'] === $email) {
+                $user = $u;
+                break;
+            }
+        }
+
+        if (!$user) {
+            return null; // Ne pas révéler si l'email existe ou non
+        }
+
+        // Générer un token de réinitialisation
+        $resetToken = bin2hex(random_bytes(32));
+        $expiresAt = time() + 3600; // Expire dans 1 heure
+
+        // Sauvegarder le token
+        $resetTokensFile = '/tmp/password_reset_tokens.json';
+        $tokens = [];
+        
+        if (file_exists($resetTokensFile)) {
+            $tokens = json_decode(file_get_contents($resetTokensFile), true) ?: [];
+        }
+
+        // Nettoyer les tokens expirés
+        $tokens = array_filter($tokens, function($token) {
+            return $token['expires_at'] > time();
+        });
+
+        $tokens[$resetToken] = [
+            'user_id' => $user['id'],
+            'email' => $email,
+            'expires_at' => $expiresAt,
+            'created_at' => time()
+        ];
+
+        file_put_contents($resetTokensFile, json_encode($tokens, JSON_PRETTY_PRINT));
+
+        return $resetToken;
+    }
+
+    public function resetPassword(string $token, string $newPassword): bool
+    {
+        $resetTokensFile = '/tmp/password_reset_tokens.json';
+        
+        if (!file_exists($resetTokensFile)) {
+            return false;
+        }
+
+        $tokens = json_decode(file_get_contents($resetTokensFile), true) ?: [];
+        
+        if (!isset($tokens[$token])) {
+            return false;
+        }
+
+        $tokenData = $tokens[$token];
+        
+        // Vérifier si le token n'est pas expiré
+        if ($tokenData['expires_at'] < time()) {
+            return false;
+        }
+
+        // Mettre à jour le mot de passe de l'utilisateur
+        $users = $this->getUsers();
+        $userId = $tokenData['user_id'];
+        
+        foreach ($users as &$user) {
+            if ($user['id'] === $userId) {
+                $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+                $user['updated_at'] = date('Y-m-d H:i:s');
+                break;
+            }
+        }
+
+        $this->saveUsers($users);
+
+        // Supprimer le token utilisé
+        unset($tokens[$token]);
+        file_put_contents($resetTokensFile, json_encode($tokens, JSON_PRETTY_PRINT));
+
+        return true;
+    }
+
+    public function validateResetToken(string $token): ?array
+    {
+        $resetTokensFile = '/tmp/password_reset_tokens.json';
+        
+        if (!file_exists($resetTokensFile)) {
+            return null;
+        }
+
+        $tokens = json_decode(file_get_contents($resetTokensFile), true) ?: [];
+        
+        if (!isset($tokens[$token])) {
+            return null;
+        }
+
+        $tokenData = $tokens[$token];
+        
+        // Vérifier si le token n'est pas expiré
+        if ($tokenData['expires_at'] < time()) {
+            return null;
+        }
+
+        return $tokenData;
+    }
 }

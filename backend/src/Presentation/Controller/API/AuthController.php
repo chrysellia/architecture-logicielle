@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Controller\API;
 
 use App\Application\Service\AuthService;
+use App\Application\Service\EmailService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,10 +14,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthController extends AbstractController
 {
     private AuthService $authService;
+    private EmailService $emailService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, EmailService $emailService)
     {
         $this->authService = $authService;
+        $this->emailService = $emailService;
     }
 
     #[Route('/api/auth/register', name: 'api_auth_register', methods: ['POST'])]
@@ -105,5 +108,120 @@ class AuthController extends AbstractController
                 'message' => 'Protected route accessed successfully'
             ]
         ]);
+    }
+
+    #[Route('/api/auth/forgot-password', name: 'api_auth_forgot_password', methods: ['POST'])]
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['email'])) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Email is required'
+            ], 400);
+        }
+
+        try {
+            $resetToken = $this->authService->requestPasswordReset($data['email']);
+            
+            if ($resetToken) {
+                $emailSent = $this->emailService->sendPasswordResetEmail($data['email'], $resetToken);
+                
+                if ($emailSent) {
+                    return new JsonResponse([
+                        'success' => true,
+                        'message' => 'Si cet email existe dans notre base de données, vous recevrez un lien de réinitialisation.'
+                    ]);
+                } else {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => 'Erreur lors de l\'envoi de l\'email'
+                    ], 500);
+                }
+            } else {
+                // Pour des raisons de sécurité, on retourne toujours le même message
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Si cet email existe dans notre base de données, vous recevrez un lien de réinitialisation.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue'
+            ], 500);
+        }
+    }
+
+    #[Route('/api/auth/reset-password', name: 'api_auth_reset_password', methods: ['POST'])]
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['token']) || !isset($data['password'])) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token and password are required'
+            ], 400);
+        }
+
+        try {
+            $success = $this->authService->resetPassword($data['token'], $data['password']);
+            
+            if ($success) {
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Mot de passe réinitialisé avec succès'
+                ]);
+            } else {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Token invalide ou expiré'
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue'
+            ], 500);
+        }
+    }
+
+    #[Route('/api/auth/validate-reset-token', name: 'api_auth_validate_reset_token', methods: ['POST'])]
+    public function validateResetToken(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['token'])) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token is required'
+            ], 400);
+        }
+
+        try {
+            $tokenData = $this->authService->validateResetToken($data['token']);
+            
+            if ($tokenData) {
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Token valide',
+                    'data' => [
+                        'email' => $tokenData['email']
+                    ]
+                ]);
+            } else {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Token invalide ou expiré'
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue'
+            ], 500);
+        }
     }
 }

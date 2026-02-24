@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dataService, DashboardStats, Order, Customer, Invoice, StockMovement } from '../services/dataService'
 import { productService } from '../services/productService'
+import { authService } from '../services/authService'
 
 export const useDashboardStats = () => {
   return useQuery<DashboardStats>({
@@ -14,7 +15,7 @@ export const useOrders = () => {
   return useQuery<Order[]>({
     queryKey: ['orders'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/orders');
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/orders');
       const data = await response.json();
       return data.data;
     },
@@ -34,7 +35,7 @@ export const useCustomers = () => {
   return useQuery<Customer[]>({
     queryKey: ['customers'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/customers');
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/customers');
       const data = await response.json();
       return data.data;
     },
@@ -54,7 +55,7 @@ export const useInvoices = () => {
   return useQuery<Invoice[]>({
     queryKey: ['invoices'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/invoices');
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/invoices');
       const data = await response.json();
       return data.data;
     },
@@ -73,7 +74,7 @@ export const useInvoice = (id: number) => {
 export const downloadInvoice = () => {
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`http://localhost:8000/api/invoices/${id}/download`);
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/invoices/${id}/download`);
       const data = await response.json();
       return data;
     },
@@ -84,7 +85,7 @@ export const useStockMovements = () => {
   return useQuery<StockMovement[]>({
     queryKey: ['stock-movements'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/stock-movements');
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/stock-movements');
       const data = await response.json();
       return data.data;
     },
@@ -148,11 +149,8 @@ export const createCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (customerData: any) => {
-      const response = await fetch('http://localhost:8000/api/customers', {
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/customers', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(customerData),
       });
       const data = await response.json();
@@ -168,11 +166,8 @@ export const updateCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await fetch(`http://localhost:8000/api/customers/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/customers/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -188,7 +183,7 @@ export const deleteCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`http://localhost:8000/api/customers/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/customers/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -205,11 +200,8 @@ export const createStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (movementData: any) => {
-      const response = await fetch('http://localhost:8000/api/stock-movements', {
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/stock-movements', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(movementData),
       });
       const data = await response.json();
@@ -226,11 +218,8 @@ export const updateStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await fetch(`http://localhost:8000/api/stock-movements/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/stock-movements/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -247,7 +236,7 @@ export const deleteStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`http://localhost:8000/api/stock-movements/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/stock-movements/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -265,11 +254,8 @@ export const createOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (orderData: any) => {
-      const response = await fetch('http://localhost:8000/api/orders', {
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(orderData),
       });
       const data = await response.json();
@@ -285,11 +271,8 @@ export const updateOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await fetch(`http://localhost:8000/api/orders/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/orders/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -305,7 +288,7 @@ export const deleteOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`http://localhost:8000/api/orders/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/orders/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -322,11 +305,8 @@ export const createInvoice = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (invoiceData: any) => {
-      const response = await fetch('http://localhost:8000/api/invoices', {
+      const response = await authService.authenticatedFetch('http://localhost:8000/api/invoices', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(invoiceData),
       });
       const data = await response.json();
@@ -342,11 +322,8 @@ export const updateInvoice = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await fetch(`http://localhost:8000/api/invoices/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/invoices/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -362,7 +339,7 @@ export const deleteInvoice = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`http://localhost:8000/api/invoices/${id}`, {
+      const response = await authService.authenticatedFetch(`http://localhost:8000/api/invoices/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();

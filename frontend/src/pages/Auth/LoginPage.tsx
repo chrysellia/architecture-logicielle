@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LogIn } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { authService, LoginCredentials } from '../../services/authService'
 
 export function LoginPage() {
@@ -102,9 +103,9 @@ export function LoginPage() {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                 Mot de passe oublié?
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -125,6 +126,16 @@ export function LoginPage() {
 
           <div className="text-center text-sm text-gray-600">
             Demo : admin@mini-erp.com / admin123
+          </div>
+
+          <div className="text-center text-sm text-gray-600 border-t pt-4">
+            Pas encore de compte ? 
+            <Link
+              to="/register"
+              className="ml-1 font-medium text-blue-600 hover:text-blue-500"
+            >
+              Créer un compte
+            </Link>
           </div>
         </form>
       </div>

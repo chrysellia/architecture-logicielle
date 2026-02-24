@@ -30,6 +30,9 @@ services:
         arguments:
             $jwtSecret: 'your-super-secret-jwt-key-change-this-in-production'
 
+    # Email Service
+    App\Application\Service\EmailService:
+
     # Auth Middleware
     App\Middleware\AuthMiddleware:
         tags:
