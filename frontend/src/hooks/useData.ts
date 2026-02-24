@@ -16,8 +16,11 @@ export const useOrders = () => {
     queryKey: ['orders'],
     queryFn: async () => {
       const response = await authService.authenticatedFetch('http://localhost:8000/api/orders');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch orders: ${response.statusText}`);
+      }
       const data = await response.json();
-      return data.data;
+      return Array.isArray(data.data) ? data.data : [];
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -36,8 +39,11 @@ export const useCustomers = () => {
     queryKey: ['customers'],
     queryFn: async () => {
       const response = await authService.authenticatedFetch('http://localhost:8000/api/customers');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch customers: ${response.statusText}`);
+      }
       const data = await response.json();
-      return data.data;
+      return Array.isArray(data.data) ? data.data : [];
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -56,8 +62,11 @@ export const useInvoices = () => {
     queryKey: ['invoices'],
     queryFn: async () => {
       const response = await authService.authenticatedFetch('http://localhost:8000/api/invoices');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch invoices: ${response.statusText}`);
+      }
       const data = await response.json();
-      return data.data;
+      return Array.isArray(data.data) ? data.data : [];
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -86,8 +95,11 @@ export const useStockMovements = () => {
     queryKey: ['stock-movements'],
     queryFn: async () => {
       const response = await authService.authenticatedFetch('http://localhost:8000/api/stock-movements');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch stock movements: ${response.statusText}`);
+      }
       const data = await response.json();
-      return data.data;
+      return Array.isArray(data.data) ? data.data : [];
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -106,8 +118,11 @@ export const useProducts = () => {
     queryKey: ['products'],
     queryFn: async () => {
       const response = await authService.authenticatedFetch('http://localhost:8000/api/products');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch products: ${response.statusText}`);
+      }
       const data = await response.json();
-      return data.data || data; // Handle both paginated and direct array responses
+      return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
     },
     staleTime: 5 * 60 * 1000,
   })

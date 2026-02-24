@@ -54,7 +54,7 @@ export function ProductListPage() {
     setEditingProduct(null)
   }
 
-  const filteredProducts = products.filter((product: any) =>
+  const filteredProducts = (Array.isArray(products) ? products : []).filter((product: any) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.sku.toLowerCase().includes(searchTerm.toLowerCase())
   )

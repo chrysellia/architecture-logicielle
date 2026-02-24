@@ -24,15 +24,17 @@ export function DashboardPage() {
   }
 
   // Produits avec stock faible (<= 5 unités)
-  const lowStockProducts = products?.filter(product => 
-    product.stockQuantity !== undefined && product.stockQuantity <= 5 && product.isActive
-  ).map(product => ({
+  const lowStockProducts = (products && Array.isArray(products) ? products : [])?.filter((product: any) => 
+    (product.stock !== undefined || product.stockQuantity !== undefined) && 
+    (product.stock <= 5 || product.stockQuantity <= 5) && 
+    (product.active !== false || product.isActive !== false)
+  ).map((product: any) => ({
     name: product.name,
-    stock: product.stockQuantity
+    stock: product.stock || product.stockQuantity
   })) || []
 
   // Commandes récentes (triées par date, plus récentes en premier)
-  const recentOrders = orders?.sort((a, b) => 
+  const recentOrders = (orders && Array.isArray(orders) ? orders : [])?.sort((a, b) => 
     new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
   ).slice(0, 3) || []
 

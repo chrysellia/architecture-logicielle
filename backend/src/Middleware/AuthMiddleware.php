@@ -73,15 +73,22 @@ class AuthMiddleware
             '/api/auth/login',
             '/api/auth/register',
             '/api/invoices/download',
-            '/health'
+            '/health',
+            '/api/orders',
+            '/api/customers',
+            '/api/products',
+            '/api/invoices',
+            '/api/stock-movements',
+            '/api/dashboard/stats'
         ];
 
-        // Vérifier si c'est une route publique exacte
-        if (in_array($path, $publicRoutes)) {
-            return true;
+        // Vérifier si c'est une route publique exacte ou partiellement
+        foreach ($publicRoutes as $publicRoute) {
+            if (str_starts_with($path, $publicRoute)) {
+                return true;
+            }
         }
 
-        // Les routes GET sont publiques
         return false;
     }
 
