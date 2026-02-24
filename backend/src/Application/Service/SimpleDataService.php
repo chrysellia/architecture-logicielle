@@ -6,6 +6,14 @@ class SimpleDataService
 {
     public function getOrders(): array
     {
+        $ordersFile = '/tmp/orders.json';
+        
+        if (file_exists($ordersFile)) {
+            $orders = json_decode(file_get_contents($ordersFile), true) ?: [];
+            return $orders;
+        }
+        
+        // Fallback vers les données statiques
         return [
             [
                 'id' => 1,
@@ -104,6 +112,23 @@ class SimpleDataService
 
     public function getCustomers(): array
     {
+        $customersFile = '/tmp/customers.json';
+        
+        if (file_exists($customersFile)) {
+            $customers = json_decode(file_get_contents($customersFile), true) ?: [];
+            
+            // Convertir les dates au format attendu si nécessaire
+            foreach ($customers as &$customer) {
+                if (isset($customer['createdAt']) && is_string($customer['createdAt'])) {
+                    // Garder le format existant
+                    $customer['createdAt'] = $customer['createdAt'];
+                }
+            }
+            
+            return $customers;
+        }
+        
+        // Fallback vers les données statiques si le fichier n'existe pas
         return [
             [
                 'id' => 1,
@@ -146,6 +171,14 @@ class SimpleDataService
 
     public function getInvoices(): array
     {
+        $invoicesFile = '/tmp/invoices.json';
+        
+        if (file_exists($invoicesFile)) {
+            $invoices = json_decode(file_get_contents($invoicesFile), true) ?: [];
+            return $invoices;
+        }
+        
+        // Fallback vers les données statiques
         return [
             [
                 'id' => 1,
@@ -197,6 +230,14 @@ class SimpleDataService
 
     public function getStockMovements(): array
     {
+        $stockMovementsFile = '/tmp/stock_movements.json';
+        
+        if (file_exists($stockMovementsFile)) {
+            $movements = json_decode(file_get_contents($stockMovementsFile), true) ?: [];
+            return $movements;
+        }
+        
+        // Fallback vers les données statiques
         return [
             [
                 'id' => 1,
@@ -292,12 +333,39 @@ class SimpleDataService
         $paidInvoices = array_filter($invoices, fn($inv) => $inv['status'] === 'paid');
         $totalPaid = array_sum(array_column($paidInvoices, 'netAmount'));
 
+        // Gérer les différents formats de produits (avec 'status' ou 'active')
+        $activeProducts = 0;
+        $lowStockProducts = 0;
+        $outOfStockProducts = 0;
+        
+        foreach ($products as $product) {
+            // Vérifier si le produit est actif (soit via 'status' soit via 'active')
+            $isActive = false;
+            if (isset($product['status'])) {
+                $isActive = $product['status'] === 'active';
+            } elseif (isset($product['active'])) {
+                $isActive = $product['active'] === true;
+            }
+            
+            if ($isActive) {
+                $activeProducts++;
+                
+                // Vérifier le stock
+                $stock = $product['stock'] ?? 0;
+                if ($stock <= 0) {
+                    $outOfStockProducts++;
+                } elseif ($stock <= 5) {
+                    $lowStockProducts++;
+                }
+            }
+        }
+
         return [
             'products' => [
                 'total' => count($products),
-                'active' => count(array_filter($products, fn($p) => $p['status'] === 'active')),
-                'lowStock' => count(array_filter($products, fn($p) => $p['status'] === 'low_stock')),
-                'outOfStock' => count(array_filter($products, fn($p) => $p['status'] === 'out_of_stock'))
+                'active' => $activeProducts,
+                'lowStock' => $lowStockProducts,
+                'outOfStock' => $outOfStockProducts
             ],
             'orders' => [
                 'total' => count($orders),
@@ -325,6 +393,14 @@ class SimpleDataService
 
     private function getProducts(): array
     {
+        $productsFile = '/tmp/products.json';
+        
+        if (file_exists($productsFile)) {
+            $products = json_decode(file_get_contents($productsFile), true) ?: [];
+            return $products;
+        }
+        
+        // Fallback vers les données statiques
         return [
             ['id' => 1, 'name' => 'Laptop Pro 15"', 'sku' => 'LP-15-001', 'status' => 'active'],
             ['id' => 2, 'name' => 'Mouse Wireless', 'sku' => 'MW-001', 'status' => 'low_stock'],
