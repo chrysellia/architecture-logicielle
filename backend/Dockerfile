@@ -16,11 +16,12 @@ RUN apk add --no-cache \
     icu-dev \
     freetype-dev \
     libjpeg-turbo-dev \
-    libzip-dev
+    libzip-dev \
+    libpng-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
+    && docker-php-ext-install -j$(nproc) \
     pdo_pgsql \
     pdo_mysql \
     gd \
@@ -31,9 +32,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     bcmath \
     intl \
     xml \
-    ctype \
-    iconv \
-    mbstring
+    ctype
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
