@@ -16,8 +16,7 @@ RUN apk add --no-cache \
     icu-dev \
     freetype-dev \
     libjpeg-turbo-dev \
-    libzip-dev \
-    libpng-dev
+    libzip-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -40,70 +39,36 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Set working directory
 WORKDIR /var/www/html
 
-# Development stage
-FROM base as development
-
-# Install development dependencies
-RUN apk add --no-cache \
-    supervisor \
-    nginx
-
-# Copy source code
-COPY **backend/** /var/www/html
-
-# Install dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# Copy configuration files
-COPY backend/docker/php/php.ini-development /usr/local/etc/php/php.ini
-COPY backend/docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY backend/docker/nginx/nginx-dev.conf /etc/nginx/nginx.conf
-COPY backend/docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Copy application files
-COPY . .
-
-# Install PHP dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
-
-# Expose ports
-EXPOSE 8000
-
-# Start services
-CMD sh -c "php -S 0.0.0.0:8000 -t public/"
-
-# Production stage
+# --- PRODUCTION STAGE ---
 FROM base as production
 
 # Install production dependencies
-RUN apk add --no-cache \
-    supervisor
+RUN apk add --no-cache supervisor
 
-# Copy configuration files
-COPY backend/docker/php/php.ini-production /usr/local/etc/php/php.ini
-COPY backend/docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY backend/docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# 1. Copie des fichiers de configuration depuis la racine globale
+# (On suppose ici que le dossier 'docker' est à la racine du projet)
+COPY docker/php/php.ini-production /usr/local/etc/php/php.ini
+COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy application files
-COPY **backend/** .
+# 2. Copie du code source depuis le dossier backend
+# On copie le CONTENU de backend dans le dossier de travail actuel (.)
+COPY backend/ .
 
-# Install PHP dependencies for production
+# 3. Installation des dépendances PHP pour la production
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
-# Clear and warm up cache
-RUN APP_ENV=production composer run-script post-install-cmd \
-    && APP_ENV=production php bin/console cache:clear \
-    && APP_ENV=production php bin/console cache:warmup
+# 4. Correction des permissions (Crucial pour bin/console et les dossiers var)
+# On s'assure que bin/console est exécutable et que www-data possède les fichiers
+RUN chmod +x bin/console && \
+    chown -R www-data:www-data /var/www/html && \
+    mkdir -p var bootstrap/cache && \
+    chmod -R 775 var bootstrap/cache
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/var \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# 5. Nettoyage et préchauffage du cache
+# Note: On utilise APP_ENV=prod (format standard Symfony)
+RUN APP_ENV=prod php bin/console cache:clear --no-warmup && \
+    APP_ENV=prod php bin/console cache:warmup
 
 # Expose port for PHP-FPM
 EXPOSE 9000
