@@ -52,10 +52,10 @@ COPY **backend/** /var/www/html
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copy configuration files
-COPY docker/php/php.ini-development /usr/local/etc/php/php.ini
-COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY docker/nginx/nginx-dev.conf /etc/nginx/nginx.conf
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY backend/docker/php/php.ini-development /usr/local/etc/php/php.ini
+COPY backend/docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY backend/docker/nginx/nginx-dev.conf /etc/nginx/nginx.conf
+COPY backend/docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy application files
 COPY . .
@@ -82,9 +82,9 @@ RUN apk add --no-cache \
     supervisor
 
 # Copy configuration files
-COPY docker/php/php.ini-production /usr/local/etc/php/php.ini
-COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY backend/docker/php/php.ini-production /usr/local/etc/php/php.ini
+COPY backend/docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY backend/docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy application files
 COPY **backend/** .
