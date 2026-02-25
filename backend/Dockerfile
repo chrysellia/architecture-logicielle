@@ -46,7 +46,7 @@ RUN apk add --no-cache \
     nginx
 
 # Copy source code
-COPY . /var/www/html
+COPY **backend/** /var/www/html
 
 # Install dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -87,7 +87,7 @@ COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy application files
-COPY . .
+COPY **backend/** .
 
 # Install PHP dependencies for production
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
