@@ -12,10 +12,15 @@ RUN apk add --no-cache \
     unzip \
     postgresql-dev \
     nginx \
-    supervisor
+    supervisor \
+    icu-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libzip-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
     pdo_pgsql \
     pdo_mysql \
     gd \
