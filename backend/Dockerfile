@@ -12,8 +12,7 @@ RUN apk add --no-cache \
     unzip \
     postgresql-dev \
     nginx \
-    supervisor \
-    php8-cli
+    supervisor
 
 # Install PHP extensions
 RUN docker-php-ext-install \
