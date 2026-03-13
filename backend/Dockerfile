@@ -62,4 +62,4 @@ USER www-data
 
 EXPOSE 8000
 
-CMD ["php-fpm"]
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public/"]
