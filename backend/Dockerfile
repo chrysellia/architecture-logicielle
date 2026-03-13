@@ -32,6 +32,8 @@ WORKDIR /var/www/html
 # ✅ Contexte = racine du repo, donc préfixer par backend/
 COPY backend/composer.json backend/composer.lock ./
 
+RUN composer update --lock --no-scripts --no-interaction
+
 RUN composer install \
     --no-interaction \
     --prefer-dist \
