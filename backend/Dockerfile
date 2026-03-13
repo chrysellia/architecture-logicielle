@@ -1,6 +1,5 @@
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
 RUN apk add --no-cache \
     git \
     curl \
@@ -16,7 +15,6 @@ RUN apk add --no-cache \
     icu-dev \
     icu-libs
 
-# Install PHP extensions
 RUN docker-php-ext-install \
     pdo_pgsql \
     gd \
@@ -27,29 +25,24 @@ RUN docker-php-ext-install \
     ctype \
     mbstring
 
-# Install Composer (via image officielle, plus fiable que curl)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copier UNIQUEMENT les fichiers Composer en premier (cache Docker)
-COPY composer.json composer.lock ./
+# ✅ Contexte = racine du repo, donc préfixer par backend/
+COPY backend/composer.json backend/composer.lock ./
 
-# Install dependencies
 RUN composer install \
     --no-interaction \
     --prefer-dist \
     --optimize-autoloader \
     --no-scripts \
     --no-dev \
-    --no-cache \
     --verbose
 
-# Copier le reste du code APRÈS composer install
-COPY . .
+# ✅ Copier tout le code backend
+COPY backend/ .
 
-# Permissions et cache Symfony
 RUN chown -R www-data:www-data /var/www/html && \
     mkdir -p var bootstrap/cache && \
     chmod -R 775 var bootstrap/cache && \
