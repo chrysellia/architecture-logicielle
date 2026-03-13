@@ -34,11 +34,15 @@ WORKDIR /var/www/html
 # Copy source code
 COPY . /var/www/html
 
-# Install dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Install dependencies with verbose output for debugging
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts --no-dev --verbose
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html
+# Set permissions and run Symfony commands manually
+RUN chown -R www-data:www-data /var/www/html && \
+    mkdir -p var bootstrap/cache && \
+    chmod -R 775 var bootstrap/cache && \
+    APP_ENV=prod php bin/console cache:clear --no-warmup && \
+    APP_ENV=prod php bin/console cache:warmup
 
 # Expose ports
 EXPOSE 8000
