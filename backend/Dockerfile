@@ -47,17 +47,6 @@ RUN composer install \
 # ✅ Copier tout le code backend
 COPY backend/ .
 
-# Créer le script de démarrage directement dans le Dockerfile
-RUN echo '#!/bin/bash\n\
-# S\'assurer que les répertoires de cache existent avec les bonnes permissions\n\
-mkdir -p var/cache/prod var/logs\n\
-chown -R www-data:www-data var\n\
-chmod -R 775 var\n\
-\n\
-# Démarrer PHP-FPM\n\
-exec php-fpm' > /start.sh && \
-    chmod +x /start.sh
-
 # Créer les répertoires nécessaires avec les bonnes permissions
 RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
     chown -R www-data:www-data /var/www/html && \
@@ -73,4 +62,4 @@ USER www-data
 
 EXPOSE 8000
 
-CMD ["/start.sh"]
+CMD ["php-fpm"]
