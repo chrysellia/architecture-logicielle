@@ -14,11 +14,17 @@ class SimpleCustomerController extends AbstractController
 
     public function __construct()
     {
-        $this->storageFile = '/tmp/customers.json';
+        $this->storageFile = sys_get_temp_dir() . '/customers.json';
     }
 
     private function ensureStorageInitialized(): void
     {
+        // Créer le répertoire si nécessaire
+        $dir = dirname($this->storageFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
         // Ne réinitialiser que si le fichier n'existe vraiment pas ou est vide
         if (!file_exists($this->storageFile) || filesize($this->storageFile) === 0) {
             $initialCustomers = [

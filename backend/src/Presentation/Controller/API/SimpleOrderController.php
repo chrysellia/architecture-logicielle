@@ -14,11 +14,17 @@ class SimpleOrderController extends AbstractController
 
     public function __construct()
     {
-        $this->storageFile = '/tmp/orders.json';
+        $this->storageFile = sys_get_temp_dir() . '/orders.json';
     }
 
     private function ensureStorageInitialized(): void
     {
+        // Créer le répertoire si nécessaire
+        $dir = dirname($this->storageFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
         // Ne réinitialiser que si le fichier n'existe vraiment pas ou est vide
         if (!file_exists($this->storageFile) || filesize($this->storageFile) === 0) {
             $initialOrders = [
@@ -220,14 +226,14 @@ class SimpleOrderController extends AbstractController
         }
 
         // Récupérer les clients et produits pour avoir les informations
-        $customersFile = '/tmp/customers.json';
+        $customersFile = sys_get_temp_dir() . '/customers.json';
         $customers = [];
         if (file_exists($customersFile)) {
             $customersContent = file_get_contents($customersFile);
             $customers = json_decode($customersContent, true) ?: [];
         }
 
-        $productsFile = '/tmp/products.json';
+        $productsFile = sys_get_temp_dir() . '/products.json';
         $products = [];
         if (file_exists($productsFile)) {
             $productsContent = file_get_contents($productsFile);

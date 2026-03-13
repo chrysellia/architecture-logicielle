@@ -6,7 +6,7 @@ class SimpleDataService
 {
     public function getOrders(): array
     {
-        $ordersFile = '/tmp/orders.json';
+        $ordersFile = sys_get_temp_dir() . '/orders.json';
         
         if (file_exists($ordersFile)) {
             $orders = json_decode(file_get_contents($ordersFile), true) ?: [];
@@ -112,7 +112,7 @@ class SimpleDataService
 
     public function getCustomers(): array
     {
-        $customersFile = '/tmp/customers.json';
+        $customersFile = sys_get_temp_dir() . '/customers.json';
         
         if (file_exists($customersFile)) {
             $customers = json_decode(file_get_contents($customersFile), true) ?: [];
@@ -171,7 +171,7 @@ class SimpleDataService
 
     public function getInvoices(): array
     {
-        $invoicesFile = '/tmp/invoices.json';
+        $invoicesFile = sys_get_temp_dir() . '/invoices.json';
         
         if (file_exists($invoicesFile)) {
             $invoices = json_decode(file_get_contents($invoicesFile), true) ?: [];
@@ -230,7 +230,7 @@ class SimpleDataService
 
     public function getStockMovements(): array
     {
-        $stockMovementsFile = '/tmp/stock_movements.json';
+        $stockMovementsFile = sys_get_temp_dir() . '/stock_movements.json';
         
         if (file_exists($stockMovementsFile)) {
             $movements = json_decode(file_get_contents($stockMovementsFile), true) ?: [];
@@ -393,7 +393,7 @@ class SimpleDataService
 
     private function getProducts(): array
     {
-        $productsFile = '/tmp/products.json';
+        $productsFile = sys_get_temp_dir() . '/products.json';
         
         if (file_exists($productsFile)) {
             $products = json_decode(file_get_contents($productsFile), true) ?: [];

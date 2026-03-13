@@ -15,13 +15,17 @@ class AuthService
     public function __construct(string $jwtSecret = null)
     {
         $this->jwtSecret = $jwtSecret ?? $_ENV['JWT_SECRET_KEY'] ?? 'fallback-secret-key';
-        $this->usersFile = '/tmp/users.json';
+        $this->usersFile = sys_get_temp_dir() . '/users.json';
         $this->initializeUsersFile();
     }
 
     private function initializeUsersFile(): void
     {
         if (!file_exists($this->usersFile)) {
+            $dir = dirname($this->usersFile);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
             file_put_contents($this->usersFile, json_encode([]));
         }
     }
@@ -156,7 +160,7 @@ class AuthService
         $expiresAt = time() + 3600; // Expire dans 1 heure
 
         // Sauvegarder le token
-        $resetTokensFile = '/tmp/password_reset_tokens.json';
+        $resetTokensFile = sys_get_temp_dir() . '/password_reset_tokens.json';
         $tokens = [];
         
         if (file_exists($resetTokensFile)) {
@@ -175,6 +179,10 @@ class AuthService
             'created_at' => time()
         ];
 
+        $dir = dirname($resetTokensFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
         file_put_contents($resetTokensFile, json_encode($tokens, JSON_PRETTY_PRINT));
 
         return $resetToken;
@@ -182,7 +190,7 @@ class AuthService
 
     public function resetPassword(string $token, string $newPassword): bool
     {
-        $resetTokensFile = '/tmp/password_reset_tokens.json';
+        $resetTokensFile = sys_get_temp_dir() . '/password_reset_tokens.json';
         
         if (!file_exists($resetTokensFile)) {
             return false;
@@ -217,6 +225,10 @@ class AuthService
 
         // Supprimer le token utilisé
         unset($tokens[$token]);
+        $dir = dirname($resetTokensFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
         file_put_contents($resetTokensFile, json_encode($tokens, JSON_PRETTY_PRINT));
 
         return true;
@@ -224,7 +236,7 @@ class AuthService
 
     public function validateResetToken(string $token): ?array
     {
-        $resetTokensFile = '/tmp/password_reset_tokens.json';
+        $resetTokensFile = sys_get_temp_dir() . '/password_reset_tokens.json';
         
         if (!file_exists($resetTokensFile)) {
             return null;

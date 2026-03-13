@@ -14,11 +14,17 @@ class SimpleInvoiceController extends AbstractController
 
     public function __construct()
     {
-        $this->storageFile = '/tmp/invoices.json';
+        $this->storageFile = sys_get_temp_dir() . '/invoices.json';
     }
 
     private function ensureStorageInitialized(): void
     {
+        // Créer le répertoire si nécessaire
+        $dir = dirname($this->storageFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
         // Ne réinitialiser que si le fichier n'existe vraiment pas ou est vide
         if (!file_exists($this->storageFile) || filesize($this->storageFile) === 0) {
             $initialInvoices = [
@@ -170,7 +176,7 @@ class SimpleInvoiceController extends AbstractController
         }
 
         // Récupérer les commandes pour avoir les informations
-        $ordersFile = '/tmp/orders.json';
+        $ordersFile = sys_get_temp_dir() . '/orders.json';
         $orders = [];
         if (file_exists($ordersFile)) {
             $ordersContent = file_get_contents($ordersFile);

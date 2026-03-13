@@ -104,8 +104,14 @@ class EmailService
             'message' => $message
         ];
         
-        $logFile = '/tmp/email_log.json';
+        $logFile = sys_get_temp_dir() . '/email_log.json';
         $logs = [];
+        
+        // Créer le répertoire si nécessaire
+        $dir = dirname($logFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
         
         if (file_exists($logFile)) {
             $logs = json_decode(file_get_contents($logFile), true) ?: [];

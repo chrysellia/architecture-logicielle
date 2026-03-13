@@ -14,11 +14,17 @@ class SimpleStockMovementController extends AbstractController
 
     public function __construct()
     {
-        $this->storageFile = '/tmp/stock_movements.json';
+        $this->storageFile = sys_get_temp_dir() . '/stock_movements.json';
     }
 
     private function ensureStorageInitialized(): void
     {
+        // Créer le répertoire si nécessaire
+        $dir = dirname($this->storageFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
         // Ne réinitialiser que si le fichier n'existe vraiment pas ou est vide
         if (!file_exists($this->storageFile) || filesize($this->storageFile) === 0) {
             $initialMovements = [
@@ -161,7 +167,7 @@ class SimpleStockMovementController extends AbstractController
         }
 
         // Récupérer les produits pour avoir les informations
-        $productsFile = '/tmp/products.json';
+        $productsFile = sys_get_temp_dir() . '/products.json';
         $products = [];
         if (file_exists($productsFile)) {
             $productsContent = file_get_contents($productsFile);

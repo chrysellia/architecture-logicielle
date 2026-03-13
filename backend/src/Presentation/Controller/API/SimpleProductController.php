@@ -17,12 +17,18 @@ class SimpleProductController extends AbstractController
     public function __construct(SimpleProductService $productService)
     {
         $this->productService = $productService;
-        $this->storageFile = '/tmp/products.json';
+        $this->storageFile = sys_get_temp_dir() . '/products.json';
         $this->initializeStorage();
     }
 
     private function initializeStorage(): void
     {
+        // Créer le répertoire si nécessaire
+        $dir = dirname($this->storageFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
         if (!file_exists($this->storageFile)) {
             $initialProducts = [
                 [
