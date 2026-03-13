@@ -47,20 +47,23 @@ RUN composer install \
 # ✅ Copier tout le code backend
 COPY backend/ .
 
-# Donner les permissions avant les commandes Symfony
-RUN chown -R www-data:www-data /var/www/html && \
-    mkdir -p var bootstrap/cache && \
+# Copier le script de démarrage
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+# Créer les répertoires nécessaires avec les bonnes permissions
+RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html && \
     chmod -R 775 var bootstrap/cache
 
-# Exécuter les commandes Symfony avec l'utilisateur www-data
-USER www-data
-RUN APP_ENV=prod APP_SECRET=change_me JWT_SECRET_KEY=change_me php bin/console cache:clear --no-warmup --no-interaction || true
-RUN APP_ENV=prod APP_SECRET=change_me JWT_SECRET_KEY=change_me php bin/console cache:warmup --no-interaction || true
+# Créer le cache manuellement avec les bonnes permissions
+RUN mkdir -p var/cache/prod/twig var/cache/prod/annotations && \
+    chown -R www-data:www-data var/cache/prod && \
+    touch var/cache/prod/.gitkeep
 
-# Revenir à root pour le nettoyage final
-USER root
-RUN rm -rf var/cache/*
+# Revenir à www-data pour la fin du build
+USER www-data
 
 EXPOSE 8000
 
-CMD ["php-fpm"]
+CMD ["/usr/local/bin/start.sh"]
