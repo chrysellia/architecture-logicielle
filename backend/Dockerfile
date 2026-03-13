@@ -47,12 +47,19 @@ RUN composer install \
 # ✅ Copier tout le code backend
 COPY backend/ .
 
+# Donner les permissions avant les commandes Symfony
 RUN chown -R www-data:www-data /var/www/html && \
     mkdir -p var bootstrap/cache && \
-    chmod -R 775 var bootstrap/cache && \
-    APP_ENV=prod php bin/console cache:clear --no-warmup && \
-    APP_ENV=prod php bin/console cache:warmup && \
-    rm -rf var/cache/*
+    chmod -R 775 var bootstrap/cache
+
+# Exécuter les commandes Symfony avec l'utilisateur www-data
+USER www-data
+RUN APP_ENV=prod APP_SECRET=change_me JWT_SECRET_KEY=change_me php bin/console cache:clear --no-warmup --no-interaction || true
+RUN APP_ENV=prod APP_SECRET=change_me JWT_SECRET_KEY=change_me php bin/console cache:warmup --no-interaction || true
+
+# Revenir à root pour le nettoyage final
+USER root
+RUN rm -rf var/cache/*
 
 EXPOSE 8000
 
