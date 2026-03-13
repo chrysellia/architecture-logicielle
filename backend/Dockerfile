@@ -12,7 +12,9 @@ RUN apk add --no-cache \
     postgresql-dev \
     nginx \
     supervisor \
-    libzip-dev
+    libzip-dev \
+    icu-dev \
+    icu-libs
 
 # Install PHP extensions
 RUN docker-php-ext-install \
@@ -25,27 +27,34 @@ RUN docker-php-ext-install \
     ctype \
     mbstring
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Install Composer (via image officielle, plus fiable que curl)
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy source code
-COPY . /var/www/html
+# Copier UNIQUEMENT les fichiers Composer en premier (cache Docker)
+COPY composer.json composer.lock ./
 
-# Install dependencies with verbose output for debugging
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts --no-dev --verbose
+# Install dependencies
+RUN composer install \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts \
+    --no-dev \
+    --verbose
 
-# Set permissions and run Symfony commands manually
+# Copier le reste du code APRÈS composer install
+COPY . .
+
+# Permissions et cache Symfony
 RUN chown -R www-data:www-data /var/www/html && \
     mkdir -p var bootstrap/cache && \
     chmod -R 775 var bootstrap/cache && \
     APP_ENV=prod php bin/console cache:clear --no-warmup && \
     APP_ENV=prod php bin/console cache:warmup
 
-# Expose ports
 EXPOSE 8000
 
-# Start PHP-FPM
 CMD ["php-fpm"]
