@@ -55,8 +55,8 @@ chown -R www-data:www-data var\n\
 chmod -R 775 var\n\
 \n\
 # Démarrer PHP-FPM\n\
-php-fpm' > /usr/local/bin/start.sh && \
-    chmod +x /usr/local/bin/start.sh
+exec php-fpm' > /start.sh && \
+    chmod +x /start.sh
 
 # Créer les répertoires nécessaires avec les bonnes permissions
 RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
@@ -73,4 +73,4 @@ USER www-data
 
 EXPOSE 8000
 
-CMD ["/usr/local/bin/start.sh"]
+CMD ["/start.sh"]
