@@ -34,7 +34,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 # Copier UNIQUEMENT les fichiers Composer en premier (cache Docker)
-COPY composer.json ./
+COPY composer.json composer.lock ./
 
 # Install dependencies
 RUN composer install \
