@@ -1,6 +1,9 @@
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache \
+# Nettoyer le cache APK pour éviter les warnings
+RUN rm -rf /var/cache/apk/* && \
+    apk update --no-cache && \
+    apk add --no-cache \
     git \
     curl \
     libpng-dev \
@@ -32,8 +35,7 @@ WORKDIR /var/www/html
 # ✅ Contexte = racine du repo, donc préfixer par backend/
 COPY backend/composer.json backend/composer.lock ./
 
-RUN composer update --lock --no-scripts --no-interaction
-
+# Utiliser composer install directement pour éviter les problèmes de cache
 RUN composer install \
     --no-interaction \
     --prefer-dist \
@@ -49,7 +51,8 @@ RUN chown -R www-data:www-data /var/www/html && \
     mkdir -p var bootstrap/cache && \
     chmod -R 775 var bootstrap/cache && \
     APP_ENV=prod php bin/console cache:clear --no-warmup && \
-    APP_ENV=prod php bin/console cache:warmup
+    APP_ENV=prod php bin/console cache:warmup && \
+    rm -rf var/cache/*
 
 EXPOSE 8000
 
