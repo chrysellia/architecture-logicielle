@@ -16,7 +16,8 @@ RUN rm -rf /var/cache/apk/* && \
     supervisor \
     libzip-dev \
     icu-dev \
-    icu-libs
+    icu-libs \
+    su-exec
 
 RUN docker-php-ext-install \
     pdo_pgsql \
