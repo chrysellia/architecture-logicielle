@@ -4,7 +4,7 @@ namespace App\Domain\ValueObject;
 
 use Doctrine\ORM\Mapping as Embeddable;
 
-#[Embeddable]
+#[ORM\Embeddable]
 class Money
 {
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
