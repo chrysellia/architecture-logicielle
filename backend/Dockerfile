@@ -54,6 +54,10 @@ COPY backend/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY backend/start.sh /start.sh
 RUN chmod +x /start.sh
 
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+ENV APP_SECRET=change_me_in_production
+
 # Créer les répertoires nécessaires avec les bonnes permissions
 RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
     chown -R www-data:www-data /var/www/html && \
