@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Variables d'environnement par défaut
 export APP_ENV=prod
@@ -15,4 +15,4 @@ php-fpm &
 sleep 2
 
 # Démarrer Nginx au premier plan
-nginx -g "daemon off;"
+exec nginx -g "daemon off;"
