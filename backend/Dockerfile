@@ -33,6 +33,7 @@ RUN chmod +x /start.sh
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 ENV APP_SECRET=change_me_in_production
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db?serverVersion=16&charset=utf8"
 
 RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
     chown -R www-data:www-data /var/www/html && \
