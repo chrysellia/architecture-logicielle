@@ -48,7 +48,7 @@ RUN composer install \
 COPY backend/ .
 
 # Copier les fichiers de configuration
-COPY backend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY backend/nginx.conf /etc/nginx/http.d/default.conf
 COPY backend/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY backend/start.sh /start.sh
 RUN chmod +x /start.sh
