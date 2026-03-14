@@ -37,10 +37,7 @@ ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db?serverVersion=16&char
 
 RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
     chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 var bootstrap/cache && \
-    php bin/console cache:clear --env=prod --no-warmup && \
-    php bin/console cache:warmup --env=prod && \
-    chown -R www-data:www-data var/cache
+    chmod -R 775 var bootstrap/cache var/logs
 
 EXPOSE 8000
 
