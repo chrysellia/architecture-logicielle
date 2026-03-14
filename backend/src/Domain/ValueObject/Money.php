@@ -2,7 +2,7 @@
 
 namespace App\Domain\ValueObject;
 
-use Doctrine\ORM\Mapping as Embeddable;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Embeddable]
 class Money
