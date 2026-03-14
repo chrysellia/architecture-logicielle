@@ -1,18 +1,17 @@
 #!/bin/sh
 
-# Variables d'environnement par défaut
 export APP_ENV=prod
-export APP_SECRET=change_me_in_production
-export JWT_SECRET_KEY=change_me_in_production
+export APP_DEBUG=0
 
-# Créer le répertoire pour le socket
 mkdir -p /var/run
+
+# Vider et reconstruire le cache
+php /var/www/html/bin/console cache:clear --env=prod --no-warmup
+php /var/www/html/bin/console cache:warmup --env=prod
 
 # Démarrer PHP-FPM en arrière-plan
 php-fpm &
 
-# Attendre que PHP-FPM soit prêt
 sleep 2
 
-# Démarrer Nginx au premier plan
 exec nginx -g "daemon off;"
