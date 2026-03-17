@@ -14,7 +14,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-COPY backend/composer.json backend/composer.lock ./
+COPY composer.json composer.lock ./
 
 RUN composer install \
     --no-interaction \
@@ -23,11 +23,11 @@ RUN composer install \
     --no-scripts \
     --no-dev
 
-COPY backend/ .
+COPY . .
 
-COPY backend/nginx.conf /etc/nginx/http.d/default.conf
-COPY backend/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY backend/start.sh /start.sh
+COPY nginx.conf /etc/nginx/http.d/default.conf
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 ENV APP_ENV=prod
