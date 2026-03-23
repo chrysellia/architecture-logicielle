@@ -1,11 +1,20 @@
-import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle, RefreshCw } from 'lucide-react'
 import { useDashboardStats, useOrders, useCustomers, useProducts } from '../../hooks/useData'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function DashboardPage() {
+  const queryClient = useQueryClient()
   const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats()
   const { data: orders, isLoading: ordersLoading } = useOrders()
   const { data: customers, isLoading: customersLoading } = useCustomers()
   const { data: products, isLoading: productsLoading } = useProducts()
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+    queryClient.invalidateQueries({ queryKey: ['orders'] })
+    queryClient.invalidateQueries({ queryKey: ['customers'] })
+    queryClient.invalidateQueries({ queryKey: ['products'] })
+  }
 
   if (statsLoading || ordersLoading || customersLoading || productsLoading) {
     return (
@@ -41,8 +50,20 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Tableau de bord</h1>
-        <p className="text-gray-600 mt-2">Vue d'ensemble de votre activité commerciale</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Tableau de bord</h1>
+            <p className="text-gray-600 mt-2">Vue d'ensemble de votre activité commerciale</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="btn btn-outline flex items-center space-x-2"
+            title="Actualiser les données"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Actualiser</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

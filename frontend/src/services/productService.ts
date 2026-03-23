@@ -1,4 +1,3 @@
-import { api } from './api';
 import { 
   Product, 
   ProductFormData, 
@@ -7,6 +6,8 @@ import {
   PaginatedProductsResponse,
   ApiResponse 
 } from '../types/product';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export const productService = {
   // Get all products with optional filters
@@ -25,32 +26,46 @@ export const productService = {
       if (filters.inStock !== undefined) params.append('inStock', filters.inStock.toString());
     }
 
-    const response = await api.get(`/api/products${params.toString() ? `?${params.toString()}` : ''}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/api/products${params.toString() ? `?${params.toString()}` : ''}`);
+    return response.json();
   },
 
   // Get single product by ID
   async getProduct(id: number): Promise<ApiResponse<Product>> {
-    const response = await api.get(`/api/products/${id}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
+    return response.json();
   },
 
   // Create new product
   async createProduct(productData: ProductFormData): Promise<ApiResponse<Product>> {
-    const response = await api.post('/api/products', productData);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/api/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    return response.json();
   },
 
   // Update existing product
   async updateProduct(id: number, productData: Partial<ProductFormData>): Promise<ApiResponse<Product>> {
-    const response = await api.put(`/api/products/${id}`, productData);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    return response.json();
   },
 
   // Delete product
   async deleteProduct(id: number): Promise<ApiResponse<void>> {
-    const response = await api.delete(`/api/products/${id}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      method: 'DELETE',
+    });
+    return response.json();
   },
 
   // Update product stock

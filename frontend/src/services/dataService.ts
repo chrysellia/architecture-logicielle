@@ -1,4 +1,4 @@
-import { api } from './api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface DashboardStats {
   products: {
@@ -30,6 +30,18 @@ export interface DashboardStats {
   }
 }
 
+export interface OrderItem {
+  id: number
+  product: {
+    id: number
+    name: string
+    sku: string
+  }
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+}
+
 export interface Order {
   id: number
   orderNumber: string
@@ -44,18 +56,6 @@ export interface Order {
   status: string
   orderDate: string
   items: OrderItem[]
-}
-
-export interface OrderItem {
-  id: number
-  product: {
-    id: number
-    name: string
-    sku: string
-  }
-  quantity: number
-  unitPrice: number
-  totalPrice: number
 }
 
 export interface Customer {
@@ -107,96 +107,60 @@ export interface StockMovement {
 export const dataService = {
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const response = await api.get('/api/dashboard/stats')
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/stats`);
+    const data = await response.json();
+    return data.data;
   },
 
   // Orders
   async getOrders(): Promise<Order[]> {
-    const response = await api.get('/api/orders')
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/orders`);
+    const data = await response.json();
+    return data.data;
   },
 
   async getOrder(id: number): Promise<Order> {
-    const response = await api.get(`/api/orders/${id}`)
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/orders/${id}`);
+    const data = await response.json();
+    return data.data;
   },
 
   // Customers
   async getCustomers(): Promise<Customer[]> {
-    const response = await api.get('/api/customers')
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/customers`);
+    const data = await response.json();
+    return data.data;
   },
 
   async getCustomer(id: number): Promise<Customer> {
-    const response = await api.get(`/api/customers/${id}`)
-    return response.data.data
-  },
-
-  async createCustomer(customerData: any): Promise<any> {
-    const response = await api.post('/api/customers', customerData)
-    return response.data
-  },
-
-  async updateCustomer(id: number, customerData: any): Promise<any> {
-    const response = await api.put(`/api/customers/${id}`, customerData)
-    return response.data
-  },
-
-  async deleteCustomer(id: number): Promise<any> {
-    const response = await api.delete(`/api/customers/${id}`)
-    return response.data
-  },
-
-  async createStockMovement(movementData: any): Promise<any> {
-    const response = await api.post('/api/stock-movements', movementData)
-    return response.data
-  },
-
-  async updateStockMovement(id: number, movementData: any): Promise<any> {
-    const response = await api.put(`/api/stock-movements/${id}`, movementData)
-    return response.data
-  },
-
-  async deleteStockMovement(id: number): Promise<any> {
-    const response = await api.delete(`/api/stock-movements/${id}`)
-    return response.data
-  },
-
-  async createOrder(orderData: any): Promise<any> {
-    const response = await api.post('/api/orders', orderData)
-    return response.data
-  },
-
-  async updateOrder(id: number, orderData: any): Promise<any> {
-    const response = await api.put(`/api/orders/${id}`, orderData)
-    return response.data
-  },
-
-  async deleteOrder(id: number): Promise<any> {
-    const response = await api.delete(`/api/orders/${id}`)
-    return response.data
+    const response = await fetch(`${API_BASE_URL}/api/customers/${id}`);
+    const data = await response.json();
+    return data.data;
   },
 
   // Invoices
   async getInvoices(): Promise<Invoice[]> {
-    const response = await api.get('/api/invoices')
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/invoices`);
+    const data = await response.json();
+    return data.data;
   },
 
   async getInvoice(id: number): Promise<Invoice> {
-    const response = await api.get(`/api/invoices/${id}`)
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/invoices/${id}`);
+    const data = await response.json();
+    return data.data;
   },
 
   // Stock Movements
   async getStockMovements(): Promise<StockMovement[]> {
-    const response = await api.get('/api/stock-movements')
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/stock-movements`);
+    const data = await response.json();
+    return data.data;
   },
 
   async getStockMovement(id: number): Promise<StockMovement> {
-    const response = await api.get(`/api/stock-movements/${id}`)
-    return response.data.data
+    const response = await fetch(`${API_BASE_URL}/api/stock-movements/${id}`);
+    const data = await response.json();
+    return data.data;
   }
 }

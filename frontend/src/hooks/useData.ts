@@ -3,11 +3,19 @@ import { dataService, DashboardStats, Order, Customer, Invoice, StockMovement } 
 import { productService } from '../services/productService'
 import { authService } from '../services/authService'
 
+// Utilitaire pour obtenir l'URL de base
+const getApiUrl = () => {
+  return (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:8000';
+}
+
 export const useDashboardStats = () => {
   return useQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
     queryFn: dataService.getDashboardStats,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    refetchInterval: 15000,
   })
 }
 
@@ -15,14 +23,15 @@ export const useOrders = () => {
   return useQuery<Order[]>({
     queryKey: ['orders'],
     queryFn: async () => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/orders');
+      const response = await fetch(`${getApiUrl()}/api/orders`);
       if (!response.ok) {
         throw new Error(`Failed to fetch orders: ${response.statusText}`);
       }
       const data = await response.json();
       return Array.isArray(data.data) ? data.data : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -38,14 +47,15 @@ export const useCustomers = () => {
   return useQuery<Customer[]>({
     queryKey: ['customers'],
     queryFn: async () => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/customers');
+      const response = await fetch(`${getApiUrl()}/api/customers`);
       if (!response.ok) {
         throw new Error(`Failed to fetch customers: ${response.statusText}`);
       }
       const data = await response.json();
       return Array.isArray(data.data) ? data.data : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -61,7 +71,7 @@ export const useInvoices = () => {
   return useQuery<Invoice[]>({
     queryKey: ['invoices'],
     queryFn: async () => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/invoices');
+      const response = await authService.authenticatedFetch(`${getApiUrl()}/api/invoices`);
       if (!response.ok) {
         throw new Error(`Failed to fetch invoices: ${response.statusText}`);
       }
@@ -83,7 +93,7 @@ export const useInvoice = (id: number) => {
 export const downloadInvoice = () => {
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await authService.authenticatedFetch(`http://localhost:8000/api/invoices/${id}/download`);
+      const response = await authService.authenticatedFetch(`${getApiUrl()}/api/invoices/${id}/download`);
       const data = await response.json();
       return data;
     },
@@ -94,7 +104,7 @@ export const useStockMovements = () => {
   return useQuery<StockMovement[]>({
     queryKey: ['stock-movements'],
     queryFn: async () => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/stock-movements');
+      const response = await authService.authenticatedFetch(`${getApiUrl()}/api/stock-movements`);
       if (!response.ok) {
         throw new Error(`Failed to fetch stock movements: ${response.statusText}`);
       }
@@ -117,14 +127,15 @@ export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/products');
+      const response = await fetch(`${getApiUrl()}/api/products`);
       if (!response.ok) {
         throw new Error(`Failed to fetch products: ${response.statusText}`);
       }
       const data = await response.json();
       return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -168,8 +179,11 @@ export const createCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (customerData: any) => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/customers', {
+      const response = await fetch(`${getApiUrl()}/api/customers`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(customerData),
       });
       const data = await response.json();
@@ -186,8 +200,11 @@ export const updateCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await authService.authenticatedFetch(`http://localhost:8000/api/customers/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/customers/${id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -204,7 +221,7 @@ export const deleteCustomer = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await authService.authenticatedFetch(`http://localhost:8000/api/customers/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/customers/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -222,7 +239,7 @@ export const createStockMovement = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (movementData: any) => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/stock-movements', {
+      const response = await authService.authenticatedFetch(`${getApiUrl()}/api/stock-movements`, {
         method: 'POST',
         body: JSON.stringify(movementData),
       });
@@ -279,8 +296,11 @@ export const createOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (orderData: any) => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/orders', {
+      const response = await fetch(`${getApiUrl()}/api/orders`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(orderData),
       });
       const data = await response.json();
@@ -297,8 +317,11 @@ export const updateOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await authService.authenticatedFetch(`http://localhost:8000/api/orders/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/orders/${id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -315,7 +338,7 @@ export const deleteOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await authService.authenticatedFetch(`http://localhost:8000/api/orders/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/orders/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -333,7 +356,7 @@ export const createInvoice = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (invoiceData: any) => {
-      const response = await authService.authenticatedFetch('http://localhost:8000/api/invoices', {
+      const response = await authService.authenticatedFetch(`${getApiUrl()}/api/invoices`, {
         method: 'POST',
         body: JSON.stringify(invoiceData),
       });
