@@ -25,6 +25,10 @@ RUN composer install \
 
 COPY . .
 
+# ← Exécuter les scripts Symfony post-install (génère le cache, etc.)
+RUN composer run-script post-install-cmd --no-interaction || true
+RUN php bin/console cache:warmup --env=prod
+
 COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY start.sh /start.sh
@@ -39,6 +43,6 @@ RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 775 var bootstrap/cache var/logs
 
-EXPOSE 8000
+EXPOSE 1000
 
 CMD ["sh", "/start.sh"]
