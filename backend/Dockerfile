@@ -25,24 +25,24 @@ RUN composer install \
 
 COPY . .
 
-# ← Exécuter les scripts Symfony post-install (génère le cache, etc.)
-RUN composer run-script post-install-cmd --no-interaction || true
-RUN php bin/console cache:warmup --env=prod
+# Configs depuis les bons chemins
+COPY docker/nginx/nginx-dev.conf /etc/nginx/nginx.conf
+COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/supervisor/supervisord.conf /etc/supervisord.conf
 
-COPY nginx.conf /etc/nginx/http.d/default.conf
-COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# Créer les dossiers nécessaires à supervisor
+RUN mkdir -p /var/log/supervisor /var/run
 
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
-ENV APP_SECRET=change_me_in_production
-ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db?serverVersion=16&charset=utf8"
 
-RUN mkdir -p var/cache/prod var/logs bootstrap/cache && \
+# Warmup du cache Symfony
+RUN php bin/console cache:warmup --env=prod --no-debug || true
+
+RUN mkdir -p var/cache/prod var/logs && \
     chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 var bootstrap/cache var/logs
+    chmod -R 775 var var/logs
 
-EXPOSE 1000
+EXPOSE 10000
 
-CMD ["sh", "/start.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
